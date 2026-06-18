@@ -1,0 +1,60 @@
+<?php
+
+namespace App\Domain\{Entity}\Actions;
+
+use App\Domain\{Entity}\Models\{Entity};
+use App\Domain\{Entity}\Events\{Entity}Created;
+use Illuminate\Support\Facades\DB;
+
+/**
+ * Single-purpose action for creating a {entity}.
+ *
+ * Use Actions when:
+ * - The operation is reused across multiple Services
+ * - The operation has clear pre/post conditions
+ * - The operation is complex enough to warrant its own class
+ *
+ * For simple CRUD, the Service can handle it directly.
+ */
+class Create{Entity}Action
+{
+    /**
+     * Execute the action.
+     *
+     * @param array<string, mixed> $data Validated input data
+     * @throws \App\Exceptions\{Entity}Exception
+     */
+    public function execute(array $data): {Entity}
+    {
+        return DB::transaction(function () use ($data) {
+            // Pre-condition checks
+            $this->validatePreConditions($data);
+
+            // Create the entity
+            ${entity} = {Entity}::create($data);
+
+            // Post-creation side effects
+            event(new {Entity}Created(${entity}));
+
+            return ${entity};
+        });
+    }
+
+    /**
+     * Validate business rule pre-conditions.
+     *
+     * @param array<string, mixed> $data
+     * @throws \App\Exceptions\{Entity}Exception
+     */
+    private function validatePreConditions(array $data): void
+    {
+        // TODO: Add domain-specific pre-condition checks
+        // Example for Vehicle:
+        //   - Plate number uniqueness within category
+        // Example for Trip Assignment:
+        //   - Driver compliance is valid
+        //   - Vehicle compliance is valid
+        //   - Contract is active (if contracted_private)
+        //   - Route capacity not exceeded
+    }
+}

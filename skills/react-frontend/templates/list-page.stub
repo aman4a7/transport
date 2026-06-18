@@ -1,0 +1,206 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  useReactTable,
+  getCoreRowModel,
+  getSortedRowModel,
+  type ColumnDef,
+  type SortingState,
+  flexRender,
+} from '@tanstack/react-table';
+import { use{Entities} } from '../hooks/use{Entities}';
+import type { {Entity}, {Entity}Filters } from '../types/{entity}';
+import { StatusBadge } from '@/shared/components/ui/StatusBadge';
+import { LoadingSpinner } from '@/shared/components/ui/LoadingSpinner';
+import { EmptyState } from '@/shared/components/ui/EmptyState';
+import { useDebounce } from '@/shared/hooks/useDebounce';
+
+/**
+ * {Entity} list page template.
+ *
+ * Patterns applied:
+ * - TanStack Table with sorting and pagination
+ * - Debounced search input
+ * - Filter controls updating query params
+ * - Status badges (text + icon, not color alone)
+ * - Loading / error / empty / success states
+ * - Row actions (view, edit, delete)
+ */
+export function {Entity}List() {
+  const navigate = useNavigate();
+
+  // --- Filters ---
+  const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 300);
+  const [filters, setFilters] = useState<{Entity}Filters>({
+    page: 1,
+    per_page: 15,
+  });
+
+  const activeFilters: {Entity}Filters = {
+    ...filters,
+    search: debouncedSearch,
+  };
+
+  // --- Data ---
+  const { data, isLoading, isError, error, refetch } = use{Entities}(activeFilters);
+
+  // --- Table ---
+  const [sorting, setSorting] = useState<SortingState>([]);
+
+  const columns: ColumnDef<{Entity}>[] = [
+    // TODO: Define columns for this entity
+    // {
+    //   accessorKey: 'name',
+    //   header: 'Name',
+    // },
+    // {
+    //   accessorKey: 'status',
+    //   header: 'Status',
+    //   cell: ({ getValue }) => <StatusBadge status={getValue<string>()} />,
+    // },
+  ];
+
+  const table = useReactTable({
+    data: data?.data ?? [],
+    columns,
+    state: { sorting },
+    onSortingChange: setSorting,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    manualPagination: true,
+    pageCount: data?.meta.pagination.last_page ?? -1,
+  });
+
+  // --- Render ---
+  return (
+    <div className="{entity}-list-page">
+      {/* Page Header */}
+      <div className="page-header">
+        <h1>{Entities}</h1>
+        <button
+          className="btn btn-primary"
+          onClick={() => navigate('/app/{entities}/new')}
+        >
+          Add {Entity}
+        </button>
+      </div>
+
+      {/* Search and Filters */}
+      <div className="filters-bar">
+        <input
+          type="search"
+          placeholder="Search {entities}..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="search-input"
+          aria-label="Search {entities}"
+        />
+        {/* TODO: Add filter dropdowns (status, category, etc.) */}
+      </div>
+
+      {/* Data States */}
+      {isLoading && <LoadingSpinner />}
+
+      {isError && (
+        <div className="error-state" role="alert">
+          <p>Failed to load {entities}: {error?.message}</p>
+          <button onClick={() => refetch()} className="btn btn-secondary">
+            Retry
+          </button>
+        </div>
+      )}
+
+      {!isLoading && !isError && data?.data.length === 0 && (
+        <EmptyState
+          title="No {entities} found"
+          description="Get started by adding your first {entity}."
+          actionLabel="Add {Entity}"
+          onAction={() => navigate('/app/{entities}/new')}
+        />
+      )}
+
+      {!isLoading && !isError && data && data.data.length > 0 && (
+        <>
+          {/* Table */}
+          <div className="table-container">
+            <table className="data-table">
+              <thead>
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <tr key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => (
+                      <th
+                        key={header.id}
+                        scope="col"
+                        onClick={header.column.getToggleSortingHandler()}
+                        className={header.column.getCanSort() ? 'sortable' : ''}
+                        aria-sort={
+                          header.column.getIsSorted() === 'asc'
+                            ? 'ascending'
+                            : header.column.getIsSorted() === 'desc'
+                              ? 'descending'
+                              : 'none'
+                        }
+                      >
+                        {flexRender(header.column.columnDef.header, header.getContext())}
+                      </th>
+                    ))}
+                    <th scope="col">Actions</th>
+                  </tr>
+                ))}
+              </thead>
+              <tbody>
+                {table.getRowModel().rows.map((row) => (
+                  <tr key={row.id}>
+                    {row.getVisibleCells().map((cell) => (
+                      <td key={cell.id}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </td>
+                    ))}
+                    <td>
+                      <div className="row-actions">
+                        <button
+                          onClick={() => navigate(`/app/{entities}/${row.original.id}`)}
+                          className="btn btn-sm"
+                          aria-label={`View {entity}`}
+                        >
+                          View
+                        </button>
+                        <button
+                          onClick={() => navigate(`/app/{entities}/${row.original.id}/edit`)}
+                          className="btn btn-sm"
+                          aria-label={`Edit {entity}`}
+                        >
+                          Edit
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination */}
+          <div className="pagination-controls">
+            <button
+              onClick={() => setFilters((f) => ({ ...f, page: (f.page ?? 1) - 1 }))}
+              disabled={!data.meta.pagination.current_page || data.meta.pagination.current_page <= 1}
+            >
+              Previous
+            </button>
+            <span>
+              Page {data.meta.pagination.current_page} of {data.meta.pagination.last_page}
+            </span>
+            <button
+              onClick={() => setFilters((f) => ({ ...f, page: (f.page ?? 1) + 1 }))}
+              disabled={data.meta.pagination.current_page >= data.meta.pagination.last_page}
+            >
+              Next
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}

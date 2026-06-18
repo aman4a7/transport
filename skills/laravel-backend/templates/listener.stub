@@ -1,0 +1,28 @@
+<?php
+
+namespace App\Domain\{Entity}\Listeners;
+
+use App\Domain\{Entity}\Events\{Entity}Created;
+use App\Support\Services\AuditLogService;
+use Illuminate\Contracts\Queue\ShouldQueue;
+
+class Log{Entity}Change implements ShouldQueue
+{
+    public function __construct(
+        private readonly AuditLogService $auditLogService,
+    ) {}
+
+    /**
+     * Handle the {entity} created event.
+     */
+    public function handle({Entity}Created $event): void
+    {
+        $this->auditLogService->log(
+            userId: auth()->id(),
+            action: 'created',
+            entityType: '{Entity}',
+            entityId: $event->{entity}->id,
+            newValues: $event->{entity}->toArray(),
+        );
+    }
+}

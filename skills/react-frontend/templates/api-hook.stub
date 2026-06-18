@@ -1,0 +1,37 @@
+import { useQuery, type UseQueryOptions } from '@tanstack/react-query';
+import { {entity}Api } from '../api/{entity}Api';
+import type { {Entity}, {Entity}Filters } from '../types/{entity}';
+import type { PaginatedResponse, ApiResponse } from '@/shared/types/api';
+
+/**
+ * TanStack Query hook for fetching a paginated list of {entities}.
+ *
+ * Usage:
+ *   const { data, isLoading, isError } = use{Entities}({ page: 1, search: 'abc' });
+ */
+export function use{Entities}(filters: {Entity}Filters) {
+  return useQuery<PaginatedResponse<{Entity}>>({
+    queryKey: ['{entities}', filters],
+    queryFn: () => {entity}Api.list(filters).then((r) => r.data),
+    placeholderData: (prev) => prev, // Keep previous data while fetching
+  });
+}
+
+/**
+ * TanStack Query hook for fetching a single {entity} by ID.
+ *
+ * Usage:
+ *   const { data } = use{Entity}(vehicleId);
+ *   const { data } = use{Entity}(vehicleId, { enabled: !!vehicleId });
+ */
+export function use{Entity}(
+  id: number,
+  options?: Partial<UseQueryOptions<ApiResponse<{Entity}>>>,
+) {
+  return useQuery<ApiResponse<{Entity}>>({
+    queryKey: ['{entities}', id],
+    queryFn: () => {entity}Api.get(id).then((r) => r.data),
+    enabled: !!id,
+    ...options,
+  });
+}

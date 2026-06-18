@@ -1,0 +1,161 @@
+import { useNavigate, useParams } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { {entity}Schema, type {Entity}FormData } from '../schemas/{entity}Schema';
+import { use{Entity} } from '../hooks/use{Entity}';
+import { use{Entity}Mutations } from '../hooks/use{Entity}Mutations';
+import { FormField } from '@/shared/components/forms/FormField';
+import { LoadingSpinner } from '@/shared/components/ui/LoadingSpinner';
+
+/**
+ * {Entity} create/edit form page template.
+ *
+ * Patterns applied:
+ * - React Hook Form with Zod resolver
+ * - Shared FormField component for consistency
+ * - Server error mapping to form fields
+ * - Loading state on submit button
+ * - Grouped sections for long forms
+ * - Edit mode: pre-populates from API data
+ */
+export function {Entity}Form() {
+  const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
+  const isEdit = Boolean(id);
+
+  // --- Load existing data for edit mode ---
+  const { data: existing, isLoading: isLoadingExisting } = use{Entity}(
+    Number(id),
+    { enabled: isEdit },
+  );
+
+  // --- Mutations ---
+  const { createMutation, updateMutation } = use{Entity}Mutations();
+  const isSubmitting = createMutation.isPending || updateMutation.isPending;
+
+  // --- Form ---
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors },
+  } = useForm<{Entity}FormData>({
+    resolver: zodResolver({entity}Schema),
+    values: isEdit && existing ? mapToFormData(existing.data) : undefined,
+  });
+
+  const onSubmit = async (data: {Entity}FormData) => {
+    try {
+      if (isEdit && id) {
+        await updateMutation.mutateAsync({ id: Number(id), data });
+      } else {
+        await createMutation.mutateAsync(data);
+      }
+      navigate('/app/{entities}');
+    } catch (err: any) {
+      // Map server validation errors to form fields
+      if (err.response?.data?.errors) {
+        const serverErrors = err.response.data.errors as Record<string, string[]>;
+        Object.entries(serverErrors).forEach(([field, messages]) => {
+          setError(field as any, { message: messages[0] });
+        });
+      }
+    }
+  };
+
+  // --- Loading for edit mode ---
+  if (isEdit && isLoadingExisting) {
+    return <LoadingSpinner />;
+  }
+
+  // --- Render ---
+  return (
+    <div className="{entity}-form-page">
+      {/* Page Header */}
+      <div className="page-header">
+        <h1>{isEdit ? 'Edit' : 'Add'} {Entity}</h1>
+      </div>
+
+      <form onSubmit={handleSubmit(onSubmit)} noValidate>
+        {/* Section 1: Basic Information */}
+        <fieldset className="form-section">
+          <legend>Basic Information</legend>
+
+          {/* TODO: Add FormField components for this entity */}
+          {/*
+          <FormField
+            label="{Entity} Name"
+            error={errors.name?.message}
+            required
+          >
+            <input
+              {...register('name')}
+              type="text"
+              id="name"
+              className={errors.name ? 'input-error' : ''}
+              aria-invalid={!!errors.name}
+              aria-describedby={errors.name ? 'name-error' : undefined}
+            />
+          </FormField>
+          */}
+        </fieldset>
+
+        {/* Section 2: Additional Details */}
+        <fieldset className="form-section">
+          <legend>Additional Details</legend>
+          {/* TODO: Add more fields grouped by category */}
+        </fieldset>
+
+        {/* Section 3: Documents (if applicable) */}
+        {/*
+        <fieldset className="form-section">
+          <legend>Documents</legend>
+          <FileUpload
+            label="Upload Document"
+            accept=".pdf,.jpg,.png"
+            maxSizeMB={10}
+            {...register('document')}
+            error={errors.document?.message}
+          />
+          <p className="helper-text">
+            Accepted: PDF, JPG, PNG. Maximum size: 10MB.
+          </p>
+        </fieldset>
+        */}
+
+        {/* Form Actions */}
+        <div className="form-actions">
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={() => navigate('/app/{entities}')}
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="btn btn-primary"
+            disabled={isSubmitting}
+          >
+            {isSubmitting
+              ? 'Saving...'
+              : isEdit
+                ? 'Update {Entity}'
+                : 'Create {Entity}'}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+/**
+ * Map API response data to form field values.
+ * Customize per entity as needed.
+ */
+function mapToFormData(data: any): {Entity}FormData {
+  return {
+    // TODO: Map API response fields to form data shape
+    ...data,
+  };
+}

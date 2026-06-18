@@ -1,0 +1,17 @@
+<?php
+
+namespace App\Domain\{Entity}\Events;
+
+use App\Domain\{Entity}\Models\{Entity};
+use Illuminate\Broadcasting\InteractsWithSockets;
+use Illuminate\Foundation\Events\Dispatchable;
+use Illuminate\Queue\SerializesModels;
+
+class {Entity}Created
+{
+    use Dispatchable, InteractsWithSockets, SerializesModels;
+
+    public function __construct(
+        public readonly {Entity} ${entity},
+    ) {}
+}

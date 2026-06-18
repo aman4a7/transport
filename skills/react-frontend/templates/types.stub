@@ -1,0 +1,64 @@
+/**
+ * TypeScript type definitions for the {Entity} module.
+ *
+ * Conventions:
+ * - Interfaces match the backend API response shape exactly
+ * - Enums mirror backend PHP enums (VehicleCategory, VehicleStatus, etc.)
+ * - Filter params are typed separately from entity interfaces
+ * - Create/update payloads are typed separately (may omit read-only fields)
+ */
+
+// --- Enums ---
+
+/** Mirror of App\Domain\{Entity}\Enums\{Entity}Status */
+export enum {Entity}Status {
+  // TODO: Add status values matching backend enum
+  // Active = 'active',
+  // Inactive = 'inactive',
+  // Suspended = 'suspended',
+}
+
+/** Mirror of App\Domain\{Entity}\Enums\{Entity}Category (if applicable) */
+// export enum {Entity}Category {
+//   DefencePlated = 'defence_plated',
+//   ContractedPrivate = 'contracted_private',
+// }
+
+// --- Entity Interface ---
+
+/** Represents a {entity} as returned by the API. */
+export interface {Entity} {
+  id: number;
+  // TODO: Add fields matching the database schema and API response
+  // name: string;
+  // status: {Entity}Status;
+  // category: {Entity}Category;
+  created_at: string;
+  updated_at: string;
+}
+
+// --- API Payload Types ---
+
+/** Payload for creating a new {entity}. Omits read-only fields. */
+export interface Create{Entity}Data {
+  // TODO: Add writable fields
+  // name: string;
+  // status?: {Entity}Status;
+}
+
+/** Payload for updating an existing {entity}. All fields optional. */
+export type Update{Entity}Data = Partial<Create{Entity}Data>;
+
+// --- Filter Types ---
+
+/** Query parameters for the {entities} list endpoint. */
+export interface {Entity}Filters {
+  page?: number;
+  per_page?: number;
+  search?: string;
+  sort_by?: string;
+  sort_dir?: 'asc' | 'desc';
+  // TODO: Add entity-specific filter fields
+  // status?: {Entity}Status;
+  // category?: {Entity}Category;
+}

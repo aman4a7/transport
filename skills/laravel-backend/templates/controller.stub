@@ -1,0 +1,96 @@
+<?php
+
+namespace App\Http\Controllers\Api\V1;
+
+use App\Domain\{Entity}\Models\{Entity};
+use App\Domain\{Entity}\Services\{Entity}Service;
+use App\Domain\{Entity}\Requests\Store{Entity}Request;
+use App\Domain\{Entity}\Requests\Update{Entity}Request;
+use App\Http\Controllers\Controller;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+class {Entity}Controller extends Controller
+{
+    public function __construct(
+        private readonly {Entity}Service ${entity}Service,
+    ) {}
+
+    /**
+     * List all {entities} with filtering and pagination.
+     */
+    public function index(Request $request): JsonResponse
+    {
+        $this->authorize('viewAny', {Entity}::class);
+
+        $result = $this->{entity}Service->list($request->validated());
+
+        return response()->json([
+            'success' => true,
+            'data' => $result->items(),
+            'meta' => ['pagination' => $result->toArray()],
+        ]);
+    }
+
+    /**
+     * Create a new {entity}.
+     */
+    public function store(Store{Entity}Request $request): JsonResponse
+    {
+        $this->authorize('create', {Entity}::class);
+
+        ${entity} = $this->{entity}Service->create($request->validated());
+
+        return response()->json([
+            'success' => true,
+            'data' => ${entity},
+            'message' => '{Entity} created successfully.',
+        ], 201);
+    }
+
+    /**
+     * Show a single {entity}.
+     */
+    public function show({Entity} ${entity}): JsonResponse
+    {
+        $this->authorize('view', ${entity});
+
+        ${entity} = $this->{entity}Service->getWithRelations(${entity});
+
+        return response()->json([
+            'success' => true,
+            'data' => ${entity},
+        ]);
+    }
+
+    /**
+     * Update an existing {entity}.
+     */
+    public function update(Update{Entity}Request $request, {Entity} ${entity}): JsonResponse
+    {
+        $this->authorize('update', ${entity});
+
+        ${entity} = $this->{entity}Service->update(${entity}, $request->validated());
+
+        return response()->json([
+            'success' => true,
+            'data' => ${entity},
+            'message' => '{Entity} updated successfully.',
+        ]);
+    }
+
+    /**
+     * Delete an {entity}.
+     */
+    public function destroy({Entity} ${entity}): JsonResponse
+    {
+        $this->authorize('delete', ${entity});
+
+        $this->{entity}Service->delete(${entity});
+
+        return response()->json([
+            'success' => true,
+            'message' => '{Entity} deleted successfully.',
+        ]);
+    }
+}

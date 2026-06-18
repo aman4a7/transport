@@ -1,0 +1,50 @@
+<?php
+
+namespace Database\Seeders;
+
+use App\Domain\{Entity}\Models\{Entity};
+use App\Domain\{Entity}\Enums\{Entity}Status;
+use Illuminate\Database\Seeder;
+
+/**
+ * Seeder template for populating {entities} with test data.
+ *
+ * Conventions:
+ * - Create realistic test data covering all statuses/categories
+ * - Respect foreign key ordering (seed parents before children)
+ * - Make idempotent with firstOrCreate or truncate-then-seed
+ * - Cover edge cases (expired docs, suspended vehicles, etc.)
+ *
+ * Replace all {Entity}, {entity}, {entities} placeholders.
+ */
+class {Entity}Seeder extends Seeder
+{
+    public function run(): void
+    {
+        // Option A: Use a factory (preferred for large datasets)
+        // {Entity}::factory()->count(50)->create();
+
+        // Option B: Manual creation (useful for controlled seed data)
+        $items = [
+            // TODO: Define seed data for this entity
+            // [
+            //     'name'     => 'Sample {Entity} 1',
+            //     'status'   => {Entity}Status::Active->value,
+            //     'category' => 'defence_plated',
+            // ],
+            // [
+            //     'name'     => 'Sample {Entity} 2',
+            //     'status'   => {Entity}Status::Suspended->value,
+            //     'category' => 'contracted_private',
+            // ],
+        ];
+
+        foreach ($items as $item) {
+            {Entity}::firstOrCreate(
+                // Unique lookup keys — adjust per entity
+                // ['name' => $item['name']],
+                $item,
+            );
+        }
+    }
+}

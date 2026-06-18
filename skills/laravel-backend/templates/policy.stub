@@ -1,0 +1,64 @@
+<?php
+
+namespace App\Domain\{Entity}\Policies;
+
+use App\Domain\{Entity}\Models\{Entity};
+use App\Models\User;
+use Illuminate\Auth\Access\HandlesAuthorization;
+
+class {Entity}Policy
+{
+    use HandlesAuthorization;
+
+    /**
+     * Determine whether the user can view any {entities}.
+     */
+    public function viewAny(User $user): bool
+    {
+        return $user->hasPermission('{entities}.view');
+    }
+
+    /**
+     * Determine whether the user can view the {entity}.
+     */
+    public function view(User $user, {Entity} ${entity}): bool
+    {
+        return $user->hasPermission('{entities}.view');
+        // TODO: Add scope checks (e.g., only own records for drivers/owners)
+    }
+
+    /**
+     * Determine whether the user can create {entities}.
+     */
+    public function create(User $user): bool
+    {
+        return $user->hasPermission('{entities}.create');
+    }
+
+    /**
+     * Determine whether the user can update the {entity}.
+     */
+    public function update(User $user, {Entity} ${entity}): bool
+    {
+        return $user->hasPermission('{entities}.update');
+        // TODO: Add scope checks
+    }
+
+    /**
+     * Determine whether the user can delete the {entity}.
+     */
+    public function delete(User $user, {Entity} ${entity}): bool
+    {
+        return $user->hasPermission('{entities}.delete');
+        // TODO: Add pre-condition checks (e.g., not in active use)
+    }
+
+    /**
+     * Determine whether the user can approve/reject the {entity}.
+     * Only applicable for entities with approval workflows.
+     */
+    public function approve(User $user, {Entity} ${entity}): bool
+    {
+        return $user->hasPermission('{entities}.approve');
+    }
+}

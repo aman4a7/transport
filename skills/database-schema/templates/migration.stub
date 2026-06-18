@@ -1,0 +1,63 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+/**
+ * Migration template for creating a new table.
+ *
+ * Conventions:
+ * - Table name: snake_case, plural ({entities})
+ * - Standard columns: id(), timestamps(), softDeletes() (if needed)
+ * - Foreign keys: {singular_related}_id with constrained()
+ * - Status columns: string type with default (not database ENUM)
+ * - Indexes on filtered/searched columns
+ *
+ * Replace all {Entity}, {entity}, {entities} placeholders.
+ */
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('{entities}', function (Blueprint $table) {
+            // Primary key
+            $table->id();
+
+            // --- Foreign Keys ---
+            // $table->foreignId('parent_id')->constrained('{parents}')->cascadeOnDelete();
+            // $table->foreignId('owner_id')->nullable()->constrained('vehicle_owners')->nullOnDelete();
+
+            // --- Core Fields ---
+            // TODO: Add entity-specific columns
+            // $table->string('name');
+            // $table->text('description')->nullable();
+
+            // --- Status / Category ---
+            // $table->string('status', 30)->default('active');
+            // $table->string('category', 30);
+
+            // --- Dates ---
+            // $table->date('expiry_date')->nullable();
+            // $table->timestamp('approved_at')->nullable();
+
+            // --- Audit Columns ---
+            // $table->foreignId('created_by')->nullable()->constrained('users');
+            // $table->foreignId('updated_by')->nullable()->constrained('users');
+
+            // --- Standard Timestamps ---
+            $table->timestamps();
+            // $table->softDeletes(); // Uncomment if soft delete is needed
+
+            // --- Indexes ---
+            // $table->index('status');
+            // $table->index(['category', 'status']);
+            // $table->unique(['unique_field']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('{entities}');
+    }
+};
