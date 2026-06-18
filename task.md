@@ -202,13 +202,15 @@
 - [x] EmptyState component — upgraded with customizable icon prop
 - [x] LoadingState component (spinner + skeleton variants, supports table/card/text types)
 
-## 0.8 — Auth Module (Frontend)
-- [ ] Create AuthContext provider
-- [ ] Create LoginPage
-- [ ] Create ForgotPasswordPage
-- [ ] Create ProtectedRoute component
-- [ ] Create useAuth hook
-- [ ] Create usePermission hook
+## 0.8 — Auth Module (Frontend) ✅
+- [x] Create AuthContext provider — wraps app tree, initializes session via GET /api/v1/auth/me on mount
+- [x] Create LoginPage — full login form with Zod validation, server error mapping, show/hide password, CSRF cookie fetch, loading/submit states
+- [x] Create ForgotPasswordPage — forgot password form with success/info states, error handling
+- [x] Update AuthGuard (ProtectedRoute) — shows loading spinner during session check before rendering children
+- [x] Upgrade useAuth hook — now re-exports from AuthContext (backward-compatible with shared/shared imports)
+- [x] Create usePermission hook — reactive permission/role checking tied to Zustand auth store
+- [x] Auth-aware navigation/header — Topbar uses API-based logout with isLogoutPending disabled state
+- [x] Error handling + loading states — login shows server errors, field-level errors, loading spinner, 401 interceptor redirects to /login
 
 ## 0.9 — Documentation Updates
 - [ ] Update AGENTS.md with real commands

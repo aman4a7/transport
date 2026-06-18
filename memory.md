@@ -103,6 +103,22 @@
 - Build passes (0 errors), ESLint passes (0 errors, 1 warning — known React Compiler/TanStack Table interop)
 - No business module code modified
 
+### Phase 0.8 — Frontend Auth Module (date: today)
+- Created `src/features/auth/api/authApi.ts` — API layer with `login`, `logout`, `me` functions wrapping Sanctum SPA cookie auth
+- Created `src/features/auth/schemas/authSchema.ts` — Zod schemas for `loginSchema` and `forgotPasswordSchema`
+- Created `src/features/auth/context/AuthContext.ts` — React context defining `AuthContextValue` with status (`loading | authenticated | unauthenticated`), login/logout, error handling
+- Created `src/features/auth/components/AuthProvider.tsx` — initializes auth session on mount via `GET /api/v1/auth/me`, wraps app tree
+- Created `src/features/auth/hooks/usePermission.ts` — reactive hook wrapping `hasPermission`/`hasRole`/`hasAnyRole` from shared utils
+- Created `src/features/auth/pages/LoginPage.tsx` — full login form with email/password, validation, show/hide password, server error mapping, loading state, CSRF cookie fetch
+- Created `src/features/auth/pages/ForgotPasswordPage.tsx` — forgot password form with email validation, success state, error handling
+- Updated `src/shared/hooks/useAuth.ts` — now re-exports from `AuthContext` consumer (backward-compatible)
+- Updated `src/router/guards/AuthGuard.tsx` — shows `LoadingState` spinner during session check, uses auth context
+- Updated `src/router/guards/RoleGuard.tsx` — modernized import style
+- Updated `src/router/routes.tsx` — added `/login` and `/forgot-password` routes under `PublicLayout`, updated root redirect
+- Updated `src/App.tsx` — wrapped with `AuthProvider`
+- Updated `src/shared/layouts/Topbar.tsx` — uses `useAuth().logout()` API call instead of direct store clear, disabled state during logout
+- Build passes (0 errors), ESLint passes (0 errors, 1 warning — same pre-existing)
+
 ### 2026-06-17
 - Foundation Stabilization Pass completed:
   - SESSION_DRIVER aligned to `redis` across .env, .env.example, config/session.php

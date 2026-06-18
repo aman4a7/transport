@@ -2,11 +2,15 @@ import { Navigate, type RouteObject } from 'react-router-dom';
 import { PublicLayout } from './layouts/PublicLayout';
 import { AppLayout } from './layouts/AppLayout';
 import { AuthGuard } from './guards/AuthGuard';
+import { LoginPage } from '@/features/auth/pages/LoginPage';
+import { ForgotPasswordPage } from '@/features/auth/pages/ForgotPasswordPage';
 
 export const routes: RouteObject[] = [
   {
     element: <PublicLayout />,
     children: [
+      { path: '/login', element: <LoginPage /> },
+      { path: '/forgot-password', element: <ForgotPasswordPage /> },
       { path: '/', element: <Navigate to="/login" replace /> },
     ],
   },

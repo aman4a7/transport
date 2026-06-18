@@ -6,6 +6,7 @@ use App\Domain\Shared\Exceptions\BusinessRuleException;
 use App\Domain\Shared\Services\AuditLogService;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Password;
 
 class AuthService
 {
@@ -53,6 +54,28 @@ class AuthService
         Auth::guard('web')->logout();
         request()->session()->invalidate();
         request()->session()->regenerateToken();
+    }
+
+    public function sendPasswordResetLink(string $email): void
+    {
+        $status = Password::broker()->sendResetLink(['email' => $email]);
+
+        $user = User::where('email', $email)->first();
+
+        if ($user) {
+            $this->auditLog->log(
+                action: 'forgot_password',
+                subject: $user,
+                description: "Password reset requested for {$email}",
+            );
+        }
+
+        if ($status !== Password::RESET_LINK_SENT) {
+            throw new BusinessRuleException(
+                message: 'Unable to send reset link. Please try again later.',
+                code: 500,
+            );
+        }
     }
 
     public function me(): User

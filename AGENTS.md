@@ -39,7 +39,7 @@ Integrated Fleet, Passenger, Driver Compliance, Contract, Fuel, and Garage Manag
 - **Backend domain structure:** `app/Domain/{Module}/` with `Models/`, `Services/`, `Actions/`, `Policies/`, `Requests/`, `Events/`, `Listeners/`, `DTOs/`, `Enums/`. Controllers are thin wrappers in `app/Http/Controllers/Api/V1/`.
 - **Frontend module structure:** `src/features/{module}/` with `api/`, `hooks/`, `components/`, `pages/`, `types/`, `schemas/`. Shared code in `src/shared/`.
 - **API docs:** Scramble auto-generates OpenAPI from Laravel (no manual spec).
-- **Compliance files:** Encrypted at rest via `spatie/laravel-encrypted-filesystem` (`compliance` disk in `config/filesystems.php`). Requires `COMPLIANCE_ENCRYPTION_KEY` in `.env`.
+- **Compliance files:** Encrypted at rest via custom `EncryptedLocalFilesystem` driver (`app/Domain/Shared/Filesystem/`), registered as the `encrypted-local` Flysystem adapter in `config/filesystems.php`. Uses Laravel's `Crypt::encryptString` / `Crypt::decryptString` (backed by `APP_KEY`).
 - **Routing:** React Router v7. Routes defined in `src/router/routes.tsx`. Sidebar nav items in `src/shared/config/navigation.ts`.
 
 ## Development Setup — Two Independent Docker Stacks

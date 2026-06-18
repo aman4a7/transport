@@ -2,13 +2,12 @@ import { useState, useRef, useEffect } from 'react';
 import { Menu, Bell, ChevronDown, LogOut, UserCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAppShell } from './appShellContext';
-import { useAuthStore } from '@/shared/stores/authStore';
+import { useAuth } from '@/shared/hooks/useAuth';
 
 export function Topbar() {
   const { pageTitle, toggleSidebar, mobileSidebarOpen, setMobileSidebarOpen, isMobile } =
     useAppShell();
-  const user = useAuthStore((s) => s.user);
-  const clearUser = useAuthStore((s) => s.clearUser);
+  const { user, logout, isLogoutPending } = useAuth();
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -34,10 +33,10 @@ export function Topbar() {
     }
   }
 
-  function handleLogout() {
-    clearUser();
+  async function handleLogout() {
     setDropdownOpen(false);
-    navigate('/login');
+    await logout();
+    navigate('/login', { replace: true });
   }
 
   const userInitials = user
@@ -115,6 +114,7 @@ export function Topbar() {
                 type="button"
                 className="topbar-dropdown-item topbar-dropdown-item--danger"
                 onClick={handleLogout}
+                disabled={isLogoutPending}
                 role="menuitem"
               >
                 <LogOut size={16} />

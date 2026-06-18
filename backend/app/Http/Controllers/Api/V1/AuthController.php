@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Domain\Auth\Requests\ForgotPasswordRequest;
 use App\Domain\Auth\Requests\LoginRequest;
 use App\Domain\Auth\Services\AuthService;
 use App\Domain\Shared\Traits\HasApiResponse;
@@ -44,6 +45,17 @@ class AuthController extends Controller
         );
     }
 
+    public function forgotPassword(ForgotPasswordRequest $request)
+    {
+        $this->authService->sendPasswordResetLink(
+            $request->validated('email'),
+        );
+
+        return $this->respond(
+            message: 'If that email is registered, a password reset link has been sent.',
+        );
+    }
+
     private function userResponse($user): array
     {
         return [
@@ -56,7 +68,11 @@ class AuthController extends Controller
                     'name' => $role->name,
                     'slug' => $role->slug,
                     'permissions' => $role->relationLoaded('permissions')
-                        ? $role->permissions->pluck('slug')
+                        ? $role->permissions->map(fn ($perm) => [
+                            'id' => $perm->id,
+                            'name' => $perm->name,
+                            'slug' => $perm->slug,
+                        ])->values()->all()
                         : [],
                 ])
                 : [],

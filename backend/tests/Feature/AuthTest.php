@@ -50,6 +50,7 @@ test('login succeeds with valid credentials', function (): void {
     expect($response['data']['roles'])->toHaveCount(1);
     expect($response['data']['roles'][0]['slug'])->toBe('transport_manager');
     expect($response['data']['roles'][0]['permissions'])->toHaveCount(21);
+    expect($response['data']['roles'][0]['permissions'][0])->toHaveKeys(['id', 'name', 'slug']);
 });
 
 test('login fails with invalid credentials', function (): void {

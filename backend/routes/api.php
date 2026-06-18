@@ -28,4 +28,8 @@ Route::prefix('v1')->group(function (): void {
     Route::get('auth/me', [AuthController::class, 'me'])
         ->middleware('auth:sanctum')
         ->name('auth.me');
+
+    Route::post('auth/forgot-password', [AuthController::class, 'forgotPassword'])
+        ->middleware('throttle:3,1')
+        ->name('auth.forgot-password');
 });

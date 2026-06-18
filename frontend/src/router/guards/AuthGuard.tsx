@@ -1,15 +1,16 @@
 import { Navigate, Outlet } from 'react-router-dom';
-import { useAuthStore } from '@/shared/stores/authStore';
+import { useAuth } from '@/shared/hooks/useAuth';
+import { LoadingState } from '@/shared/components/ui/LoadingState';
 
-interface AuthGuardProps {
-  redirectTo?: string;
-}
+export function AuthGuard() {
+  const { isAuthenticated, isLoading } = useAuth();
 
-export function AuthGuard({ redirectTo = '/login' }: AuthGuardProps) {
-  const { isAuthenticated } = useAuthStore();
+  if (isLoading) {
+    return <LoadingState variant="spinner" message="Checking session..." />;
+  }
 
   if (!isAuthenticated) {
-    return <Navigate to={redirectTo} replace />;
+    return <Navigate to="/login" replace />;
   }
 
   return <Outlet />;
