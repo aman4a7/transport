@@ -3,11 +3,14 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Domain\Driver\Models\Driver;
+use App\Domain\Owner\Models\Owner;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -29,6 +32,16 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function driver(): HasOne
+    {
+        return $this->hasOne(Driver::class);
+    }
+
+    public function owner(): HasOne
+    {
+        return $this->hasOne(Owner::class);
     }
 
     public function roles(): BelongsToMany
@@ -72,15 +85,27 @@ class User extends Authenticatable
 
     public function hasPermission(string $permission): bool
     {
-        return $this->permissions()
-            ->where('slug', $permission)
+        return $this->roles()
+            ->where(function ($query) {
+                $query->whereNull('user_role.expires_at')
+                    ->orWhere('user_role.expires_at', '>', now());
+            })
+            ->whereHas('permissions', function ($query) use ($permission): void {
+                $query->where('slug', $permission);
+            })
             ->exists();
     }
 
     public function hasAnyPermission(array $permissions): bool
     {
-        return $this->permissions()
-            ->whereIn('slug', $permissions)
+        return $this->roles()
+            ->where(function ($query) {
+                $query->whereNull('user_role.expires_at')
+                    ->orWhere('user_role.expires_at', '>', now());
+            })
+            ->whereHas('permissions', function ($query) use ($permissions): void {
+                $query->whereIn('slug', $permissions);
+            })
             ->exists();
     }
 

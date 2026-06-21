@@ -29,7 +29,10 @@ Integrated Fleet, Passenger, Driver Compliance, Contract, Fuel, and Garage Manag
 | Module | Backend | Frontend | Tests |
 |--------|---------|----------|-------|
 | Auth/RBAC | ✅ | ⚙️ scaffold | ✅ |
-| All others (Vehicle, Driver, Owner, Passenger, Route, Trip, Fuel, Garage, Compliance, Contract, Reports) | ❌ | ❌ | ❌ |
+| Fleet (Vehicle, Driver, Owner) | ✅ | ✅ | ✅ |
+| Passenger | ✅ | ✅ | ✅ |
+| Compliance | ✅ | ✅ | ✅ |
+| Route, Trip, Fuel, Garage, Contract, Reports | ❌ | ❌ | ❌ |
 
 ## Architecture
 - **Frontend:** React 19 + TypeScript 6 + Vite 8 SPA (separate repo from backend, NOT Inertia). Entry: `frontend/src/main.tsx`.
@@ -89,6 +92,16 @@ docker compose -f docker-compose.yml up -d   # nginx + php + pgsql + redis
 - **Migrations:** Laravel default timestamp prefix, snake_case table names plural (e.g., `fuel_transactions`).
 - **Naming:** `PascalCase` for models/components, `camelCase` for hooks/vars, `snake_case` for DB/api fields.
 - **Dual Docker stacks** documented in `memory.md` and `docker-compose.yml` header.
+
+## API Documentation
+- Scramble auto-generates OpenAPI docs at `/docs/api` (local) from Laravel route annotations.
+- API docs access outside local environment is gated by the `viewApiDocs` Gate (defined in `AppServiceProvider::boot()`), currently restricted to the `system_administrator` role. To grant access to additional roles, update the `Gate::define('viewApiDocs', ...)` closure.
+- To regenerate: `docker compose exec -T laravel.test php artisan scramble:cache`
+- To export spec: `docker compose exec -T laravel.test php artisan scramble:export`
+
+## Optional Pre-flight Script
+- `scripts/check-docker-stacks.sh` — run before starting either Docker stack to detect port conflicts.
+- Both stacks bind to ports 54320 (PostgreSQL) and 63790 (Redis) by default.
 
 ## What's NOT present (do not assume)
 - No GitHub Actions CI workflows (`.github/workflows/` is empty/wiped).

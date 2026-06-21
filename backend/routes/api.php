@@ -1,6 +1,11 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\ComplianceDocumentController;
+use App\Http\Controllers\Api\V1\DriverController;
+use App\Http\Controllers\Api\V1\OwnerController;
+use App\Http\Controllers\Api\V1\PassengerController;
+use App\Http\Controllers\Api\V1\VehicleController;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Route;
 
@@ -32,4 +37,19 @@ Route::prefix('v1')->group(function (): void {
     Route::post('auth/forgot-password', [AuthController::class, 'forgotPassword'])
         ->middleware('throttle:3,1')
         ->name('auth.forgot-password');
+
+    Route::middleware('auth:sanctum')->group(function (): void {
+        Route::apiResource('vehicles', VehicleController::class);
+        Route::apiResource('drivers', DriverController::class);
+        Route::apiResource('owners', OwnerController::class);
+        Route::apiResource('passengers', PassengerController::class);
+
+        Route::prefix('compliance')->group(function (): void {
+            Route::get('documents', [ComplianceDocumentController::class, 'index'])->name('compliance.documents.index');
+            Route::post('documents', [ComplianceDocumentController::class, 'store'])->name('compliance.documents.store');
+            Route::get('documents/{compliance_document}', [ComplianceDocumentController::class, 'show'])->name('compliance.documents.show');
+            Route::post('documents/{compliance_document}/approve', [ComplianceDocumentController::class, 'approve'])->name('compliance.documents.approve');
+            Route::post('documents/{compliance_document}/reject', [ComplianceDocumentController::class, 'reject'])->name('compliance.documents.reject');
+        });
+    });
 });

@@ -52,15 +52,13 @@
 | Module | Backend | Frontend | Tests | Status |
 |--------|---------|----------|-------|--------|
 | Auth/RBAC | ✅ | ⚙️ | ✅ | In progress |
-| Vehicle | ❌ | ❌ | ❌ | Not started |
-| Driver | ❌ | ❌ | ❌ | Not started |
-| Owner/Contractor | ❌ | ❌ | ❌ | Not started |
-| Passenger | ❌ | ❌ | ❌ | Not started |
+| Fleet (Vehicles, Drivers, Owners) | ✅ | ✅ | ✅ | Done |
+| Passenger | ✅ | ✅ | ✅ | Done |
 | Route | ❌ | ❌ | ❌ | Not started |
 | Trip | ❌ | ❌ | ❌ | Not started |
 | Fuel | ❌ | ❌ | ❌ | Not started |
 | Garage | ❌ | ❌ | ❌ | Not started |
-| Compliance | ❌ | ❌ | ❌ | Not started |
+| Compliance | ✅ | ✅ | ✅ | Done |
 | Contract | ❌ | ❌ | ❌ | Not started |
 | Reports | ❌ | ❌ | ❌ | Not started |
 
@@ -75,6 +73,7 @@
 - Laravel requests: `{Action}{Model}Request.php` (e.g., `StoreVehicleRequest.php`)
 - Migrations: Laravel default timestamp prefix
 - TypeScript types: PascalCase in `types/` directories (e.g., `Vehicle.ts`)
+- Frontend feature folders: snake_case or kebab-case PLURAL noun matching the DB table name (e.g., `vehicles/`, `drivers/`, `owners/`, `passengers/`). NEVER create a singular-named feature folder. The only exception is `auth/`, which has no plural form. Before creating a new feature folder for Route, Trip, Fuel, Garage, Compliance, Contract, Reports, or Notification, check whether an empty stub already exists under a different name and reuse/rename it rather than creating a duplicate.
 
 ## Future Skills To Add Or Expand
 - transport-routing
@@ -125,15 +124,21 @@
   - QUEUE_CONNECTION aligned to `redis` across .env, .env.example, config/queue.php (Horizon compatible)
   - Production defaults set in .env.example: APP_DEBUG=false, SESSION_DRIVER=redis, QUEUE_CONNECTION=redis, SESSION_ENCRYPT=true
   - Created `audit_logs` migration (2026_06_17_000000) with indexes for subject_type/subject_id, actor_id, created_at
-  - Verified Laravel 13 does NOT support native local filesystem encryption; compliance disk requires `spatie/laravel-encrypted-filesystem` package (tracked requirement, not yet installed)
+   - Verified Laravel 13 does NOT support native local filesystem encryption; compliance disk uses custom `EncryptedLocalFilesystem` driver (app/Domain/Shared/Filesystem/), backed by `Crypt::encryptString` / `Crypt::decryptString`
 - Phase 0.2 (Backend Foundation) completed with stabilization.
+
+### Phase 1 — Fleet Module (Vehicles, Drivers, Owners) Done
+- Backend: migrations, enums, models, services, policies, form requests, controllers (thin), routes, factories, tests (35 files)
+- Frontend: types, schemas, api clients, hooks, pages (List/Form/Detail per module), routes (21 files)
+- All 35 backend tests pass (115 assertions), Pint clean on 89 files, frontend tsc + vite build clean
+- Git commit `c7a898e` includes auth fixes and Fleet module work
 
 ### Pre-Phase-0.4 Stabilization (date: today)
 - Fixed .gitignore: added database/*.sqlite and .docker-build.log
 - Fixed .env.example: CACHE_STORE=redis, LOG_LEVEL=info, added COMPLIANCE_ENCRYPTION_KEY placeholder
 - Filled blank AGENTS.md commands (frontend dev, lint, build)
 - Fixed compose.yaml: depends_on now uses condition: service_healthy for pgsql and redis
-- Installed spatie/laravel-encrypted-filesystem and configured compliance disk in filesystems.php
+- Created custom `EncryptedLocalFilesystem` driver and registered as `encrypted-local` Flysystem adapter in config/filesystems.php
 - Added throttle test to AuthTest.php (429 after 5 failed login attempts)
 - Created RoleFactory and PermissionFactory
 - Configured phpunit.xml to use PostgreSQL (laravel_test database)
@@ -243,3 +248,66 @@
 - Created initial cloud-code starter kit files.
 - Chosen AGENTS.md as primary repo instruction file.
 - Added CLAUDE.md as Claude-specific compatibility layer.
+
+### Post-Phase-1 Cleanup & Hardening (date: today)
+- Deleted 4 orphaned empty frontend feature folders (vehicle, driver, passenger, contractor) — these had plural counterparts (vehicles, drivers, passengers, owners)
+- Documented plural-only frontend feature folder naming convention in Naming Conventions
+- Fixed vehicles table plate_number uniqueness constraint (was per-category composite unique, now global unique — confirmed by stakeholder: plate numbers are globally unique identifiers, not shareable across categories); updated StoreVehicleRequest and UpdateVehicleRequest to remove `where('category')` scoping
+- Created migration `2026_06_20_000001_fix_vehicles_plate_number_unique_constraint.php`
+- Plate_number global uniqueness is the confirmed final decision — no revert needed
+- Added frontend CI job (lint, build, test) to `.github/workflows/ci.yml`
+- Added vitest + testing-library setup to frontend; wrote 34 tests across 7 test suites (DataTable, VehicleList, useVehicles, KpiCard, StatusBadge, EmptyState, FormBuilder)
+- Added vitest-axe accessibility tests for all shared UI components (5 components, zero violations)
+- Configured Scramble and exposed API documentation at `/docs/api` (production-gated via `RestrictedDocsAccess` middleware)
+- Added ADR 0006 (dual Docker stack: dev Sail vs. production)
+- Added `scripts/check-docker-stacks.sh` pre-flight conflict check
+- Referenced Scramble docs and pre-flight script in AGENTS.md
+- Added composer audit and npm audit steps to CI
+- Wrote compliance-workflow skill (SKILL.md, checklist.md, templates/, examples/)
+- Wrote testing-strategy skill (SKILL.md, checklist.md, templates/, examples/)
+- Updated `skills/laravel-backend/checklist.md` to reflect globally-unique plate_number constraint
+
+### API Docs Gate Fix (date: today)
+- Defined missing `viewApiDocs` Gate in `AppServiceProvider` — previously undefined, causing `/docs/api` to be unreachable (403 for everyone) outside local environment
+- Restricted to `system_administrator` role
+- Added `ApiDocsAccessTest.php` covering admin access, non-admin denial, and unauthenticated denial outside local environment
+
+### Accepted Dependency Risks
+- **composer audit** — 3 medium-severity advisories for `guzzlehttp/guzzle` (CVE-2026-55767, CVE-2026-55568) and `guzzlehttp/psr7` (CVE-2026-55766). All rated **medium** severity. Accepted as these are transitive dependencies via Laravel's HTTP client. No known exploit in this application's context (internal on-premises deployment, no external API calls). Fixed when Guzzle publishes patch releases >7.12.1.
+- **npm audit** — 0 vulnerabilities found. Clean.
+
+### Phase 3 — Compliance Module (date: today)
+- Created ADR 0007 — compliance document workflow (state machine, permissions, storage)
+- Created migration `2026_06_20_000003_create_compliance_documents_table` (polymorphic, no soft deletes)
+- Created enums: `ComplianceStatus`, `ComplianceDocumentType`
+- Created `ComplianceDocument` model with polymorphic morphTo, scopes (pending, approved, expired, forVehicle, forDriver, forOwner), casts
+- Created `ComplianceDocumentService` with upload, approve, reject, markExpired, delete methods → all audit-logged
+- Created `ComplianceDocumentPolicy` with viewAny, view (row-level scoping for driver/contractor), create, update, delete, approve, reject
+- Created form requests: `StoreComplianceDocumentRequest` (file validation: pdf/jpg/jpeg/png, max 10MB), `UpdateComplianceDocumentRequest`, `ApproveComplianceDocumentRequest`, `RejectComplianceDocumentRequest` (reason required, min 10 chars)
+- Created `ComplianceDocumentController` (thin, delegates to service)
+- Added custom routes under `/api/v1/compliance/documents` (index, store, show, approve, reject)
+- Added `driver()` and `owner()` hasOne relations to User model for policy scoping
+- Added permissions: `compliance.create`, `compliance.update`, `compliance.delete` to PermissionSeeder + assigned to compliance_officer, driver, contractor roles
+- Created `ComplianceDocumentFactory` with approved/rejected/expired states
+- Wrote 16 backend tests covering upload, validation, approve, reject, authorization, expiry detection, audit logs
+- Created frontend feature folder `frontend/src/features/compliance/` with types, schemas, API client, hooks, pages (List, Detail, Review, Upload)
+- Updated frontend routes for compliance pages
+- Added `permissions: ['compliance.view']` to compliance nav item
+- Updated `ConfirmDialog` message prop to accept `React.ReactNode` (required for reject dialog with inline textarea)
+- Backend: 63 tests pass (172 assertions), Pint 115 files PASS
+- Frontend: build 0 errors, lint 0 errors (3 pre-existing warnings), 34 tests pass
+
+### Compliance Expiry Loop Closed (date: today)
+- Created `app/Console/Commands/Compliance/CheckExpirations.php` — scheduled daily at 01:00 via `routes/console.php`, marks approved documents as expired where `expires_at` has passed, uses `ComplianceDocumentService::markExpired()` which triggers individual audit log entries
+- Created `ComplianceDocumentApproved` event — dispatched from `ComplianceDocumentService::approve()` after status update and audit log
+- Created `SyncEntityExpiryDate` listener — registered in `AppServiceProvider::boot()` via `Event::listen()`, syncs:
+  - Vehicle registration document approval → `Vehicle.registration_expiry` = document's `expires_at`
+  - Vehicle insurance document approval → `Vehicle.insurance_expiry` = document's `expires_at`
+  - Driver license document approval → `Driver.license_expiry` = document's `expires_at`
+- Driver license expiry sync IS implemented (Driver model already has `license_expiry` column with date cast) — no gap for Driver
+- Non-Vehicle/Driver entity approvals (Owner) work without error and do not attempt to update nonexistent fields
+- `Vehicle.status_changed_at` is NOT modified by the expiry sync (only `registration_expiry`/`insurance_expiry` changes)
+- Wrote `ComplianceCheckExpirationsTest` (6 tests: past expiry, future expiry, pending untouched, rejected untouched, audit log, idempotent)
+- Wrote `ComplianceDocumentApprovalSyncTest` (5 tests: registration sync, insurance sync, driver license sync, non-vehicle entity, status_changed_at preserved)
+- Final: **74 backend tests pass** (185 assertions), **Pint 120 files PASS**
+- Frontend unchanged (no frontend changes needed for this pass)

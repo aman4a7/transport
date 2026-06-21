@@ -16,15 +16,15 @@ class RolePermissionSeeder extends Seeder
             'transport_manager' => [
                 'vehicles.view', 'vehicles.create', 'vehicles.update', 'vehicles.delete',
                 'drivers.view', 'drivers.create', 'drivers.update', 'drivers.delete',
+                'owners.view', 'owners.create', 'owners.update', 'owners.delete',
                 'routes.view', 'routes.create', 'routes.update', 'routes.delete',
                 'trips.view', 'trips.create', 'trips.update', 'trips.delete', 'trips.assign',
-                'owners.view',
-                'passengers.view',
+                'passengers.view', 'passengers.create', 'passengers.update', 'passengers.delete',
                 'reports.view', 'reports.generate',
             ],
 
             'compliance_officer' => [
-                'compliance.view', 'compliance.verify', 'compliance.reject',
+                'compliance.view', 'compliance.create', 'compliance.update', 'compliance.verify', 'compliance.reject',
                 'drivers.view',
                 'vehicles.view',
                 'contracts.view',
@@ -51,13 +51,13 @@ class RolePermissionSeeder extends Seeder
             'driver' => [
                 'trips.view',
                 'vehicles.view',
-                'compliance.view',
+                'compliance.view', 'compliance.create', 'compliance.update',
             ],
 
             'contractor' => [
                 'owners.view',
                 'contracts.view',
-                'compliance.view',
+                'compliance.view', 'compliance.create', 'compliance.update',
                 'vehicles.view',
             ],
 

@@ -30,7 +30,7 @@ Use this checklist before finalizing any backend module work.
 - [ ] All required fields are validated
 - [ ] Enum values are validated against allowed values
 - [ ] File uploads validate size, type, and mime
-- [ ] Unique constraints include scope (e.g., plate_number per category)
+- [ ] Unique constraints are globally unique unless there is a confirmed business reason for composite scoping
 
 ## Event / Audit Checklist
 - [ ] Events are dispatched for create, update, delete, status change

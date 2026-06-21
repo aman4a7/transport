@@ -60,7 +60,7 @@ export const navigationConfig: NavSection[] = [
   {
     label: 'Compliance & Contracts',
     items: [
-      { label: 'Compliance', path: '/app/compliance', icon: ShieldCheck },
+      { label: 'Compliance', path: '/app/compliance', icon: ShieldCheck, permissions: ['compliance.view'] },
       { label: 'Contracts', path: '/app/contracts', icon: FileText },
     ],
   },

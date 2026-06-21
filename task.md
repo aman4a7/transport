@@ -4,6 +4,7 @@
 > - Phase 0.1: ✅ Completed
 > - Phase 0.2: ✅ Completed (with Stabilization Pass)
 > - Phase 0.3: ✅ Completed (Auth/RBAC — Steps 1 & 2A done)
+> - Phase 1: ✅ Completed (Fleet Module)
 > - Auth decision: Sanctum SPA cookie authentication (not JWT, not Passport)
 
 ---
@@ -87,7 +88,7 @@
 - [x] QUEUE_CONNECTION consistency: aligned .env/.env.example/config to `redis`
 - [x] Production defaults: .env.example uses APP_DEBUG=false, SESSION_DRIVER=redis, QUEUE_CONNECTION=redis, SESSION_ENCRYPT=true
 - [x] Audit logging: created `audit_logs` migration (2026_06_17_000000)
-- [x] Compliance storage: verified Laravel 13 does NOT support native local encryption; tracked requirement for `spatie/laravel-encrypted-filesystem` package before document upload features
+- [x] Compliance storage: verified Laravel 13 does NOT support native local encryption; custom `EncryptedLocalFilesystem` driver created, backed by `Crypt::encryptString` / `Crypt::decryptString`, registered as `encrypted-local` Flysystem adapter
 
 ---
 
@@ -110,7 +111,7 @@
 - [x] Fix .env.example (CACHE_STORE, LOG_LEVEL, COMPLIANCE_ENCRYPTION_KEY)
 - [x] Fill AGENTS.md blank commands
 - [x] Fix compose.yaml health conditions
-- [x] Install spatie/laravel-encrypted-filesystem + configure compliance disk
+- [x] Create custom `EncryptedLocalFilesystem` driver and register as `encrypted-local` Flysystem adapter in config/filesystems.php
 - [x] Add throttle test to AuthTest.php
 - [x] Create RoleFactory and PermissionFactory
 - [x] Configure phpunit.xml for PostgreSQL
@@ -212,7 +213,154 @@
 - [x] Auth-aware navigation/header — Topbar uses API-based logout with isLogoutPending disabled state
 - [x] Error handling + loading states — login shows server errors, field-level errors, loading spinner, 401 interceptor redirects to /login
 
-## 0.9 — Documentation Updates
-- [ ] Update AGENTS.md with real commands
-- [ ] Update context.md with implementation state
-- [ ] Create ADR-0003 for TypeScript + SPA decision
+## 1.0 — Fleet Module (Vehicles, Drivers, Owners) ✅
+
+### Backend ✅
+- [x] Create `vehicles` migration with plate_number+category composite unique, soft deletes, audit fields
+- [x] Create `drivers` migration with assigned_vehicle_id, license fields, soft deletes
+- [x] Create `owners` migration with company/contact fields, soft deletes
+- [x] Create enums: VehicleCategory, VehicleStatus, FuelType, DriverStatus, OwnerStatus
+- [x] Create Vehicle model with casts, relationships (owner, createdBy, updatedBy), status_changed_at observer, Auditable trait
+- [x] Create Driver model with casts, relationships (user, assignedVehicle, createdBy, updatedBy), Auditable trait
+- [x] Create Owner model with casts, relationships (user, vehicles, createdBy, updatedBy), Auditable trait
+- [x] Create VehicleService with filtering (search by plate/make/model, category, status, owner_id), business rule enforcement (contracted_private requires owner_id on both create and update)
+- [x] Create DriverService with filtering (search by user name/license, status, license_category)
+- [x] Create OwnerService with filtering (search by company/contact/email, status)
+- [x] Create VehiclePolicy with RBAC checks (viewAny, view, create, update, delete) and contractor scoping
+- [x] Create DriverPolicy with RBAC checks
+- [x] Create OwnerPolicy with RBAC checks
+- [x] Create StoreVehicleRequest with plate_number unique rule (scoped to category)
+- [x] Create UpdateVehicleRequest with plate_number unique rule (scoped to category, ignoring self)
+- [x] Create StoreDriverRequest with unique license_number validation
+- [x] Create UpdateDriverRequest with unique license_number validation (ignoring self)
+- [x] Create StoreOwnerRequest with unique email validation
+- [x] Create UpdateOwnerRequest with unique email validation (ignoring self)
+- [x] Create VehicleController (thin, ≤10 lines/method, delegates to VehicleService)
+- [x] Create DriverController (thin)
+- [x] Create OwnerController (thin)
+- [x] Register Fleet routes under auth:sanctum middleware (apiResource)
+- [x] Create VehicleFactory, DriverFactory, OwnerFactory
+- [x] Create VehicleTest (9 tests: CRUD + authorization + business rules)
+- [x] Create DriverTest (7 tests: CRUD + authorization)
+- [x] Create OwnerTest (8 tests: CRUD + authorization + duplicate email)
+
+### Frontend ✅
+- [x] Create vehicle types (Vehicle, VehicleCategory, VehicleStatus, FuelType, VehicleFilters, CreateVehicleData)
+- [x] Create vehicle Zod schema with superRefine for contracted_private owner_id requirement
+- [x] Create vehicle API client (list, get, create, update, delete)
+- [x] Create useVehicles hook (query list with placeholder, single with enabled guard, CRUD mutations)
+- [x] Create VehicleList page (DataTable + filters + confirm delete)
+- [x] Create VehicleForm page (create/edit with server error handling)
+- [x] Create VehicleDetail page (KpiCards + info rows + delete)
+- [x] Create driver types
+- [x] Create driver Zod schema with license_category enum
+- [x] Create driver API client
+- [x] Create useDrivers hook
+- [x] Create DriverList page
+- [x] Create DriverForm page
+- [x] Create DriverDetail page
+- [x] Create owner types
+- [x] Create owner Zod schema
+- [x] Create owner API client
+- [x] Create useOwners hook
+- [x] Create OwnerList page
+- [x] Create OwnerForm page
+- [x] Create OwnerDetail page (with nested vehicles DataTable)
+- [x] Register all Fleet routes in routes.tsx
+- [x] Navigation config already had Fleet entries
+
+### Review & Fixes ✅
+- [x] Integration audit — 54 files reviewed, 6 bugs fixed (auth permissions format, forgot-password endpoint, encrypted filesystem docs, SESSION_SECURE_COOKIE, missing components, predis removal)
+- [x] Fleet review — 3 blockers fixed (plate_number unique validation, driver license_category enum, update business rule enforcement), 4 minors fixed (status_changed_at, select dropdown, owner_id refinement, policy signature)
+
+## 0.9 — Documentation Updates ✅
+- [x] Update AGENTS.md with real commands (done in Pre-Phase-0.4 Stabilization)
+- [x] Create ADR-0003 for TypeScript + SPA decision (done in Phase 0.4)
+
+## Post-Phase-1 Cleanup & Hardening ✅
+- [x] Delete orphaned empty feature folders
+- [x] Document frontend naming convention
+- [x] Fix plate_number uniqueness scope (was per-category, now global unique)
+- [x] Add frontend CI job (lint, build, test)
+- [x] Add frontend test tooling (vitest, testing-library, vitest-axe)
+- [x] Write DataTable + Vehicle feature tests (34 tests across 7 suites)
+- [x] Add accessibility tests for shared components (5 components, zero violations)
+- [x] Configure Scramble API documentation at `/docs/api`
+- [x] Write ADR 0006 (dual Docker stack)
+- [x] Add Docker stack conflict-check script (`scripts/check-docker-stacks.sh`)
+- [x] Add dependency vulnerability scanning to CI (composer audit + npm audit)
+- [x] Write compliance-workflow skill (SKILL.md, checklist, templates, examples)
+- [x] Write testing-strategy skill (SKILL.md, checklist, templates, examples)
+- [x] Update memory.md change log and accepted risks
+- [x] Update task.md
+
+## Phase 3 — Compliance Module ✅
+
+### Task 1 — Design compliance domain ✅
+- [x] Create ADR 0007 — compliance-workflow.md (state machine, permissions, storage design, expiry handling)
+
+### Task 2 — Database ✅
+- [x] Create migration `2026_06_20_000003_create_compliance_documents_table` (polymorphic, indexed, no soft deletes)
+
+### Task 3 — Model ✅
+- [x] Create `ComplianceDocument` model with polymorphic morphTo, scopes (pending, approved, expired, forVehicle, forDriver, forOwner), casts for status/type enums
+- [x] Create enums: `ComplianceStatus`, `ComplianceDocumentType`
+
+### Task 4 — Storage ✅
+- [x] Use existing `encrypted-local` compliance disk
+- [x] `ComplianceDocumentService` with upload, approve, reject, markExpired, delete methods
+- [x] Every approval/rejection logged via AuditLogService
+- [x] Rejected documents require reason
+- [x] Expired documents cannot become approved without resubmission
+
+### Task 5 — Policies ✅
+- [x] Create `ComplianceDocumentPolicy` with viewAny, view (row-level scoping), create, update, delete, approve, reject
+- [x] Compliance Officer: view all, approve/reject
+- [x] Driver: view own documents only
+- [x] Contractor: view own documents only
+- [x] Admin: full access
+
+### Task 6 — Requests ✅
+- [x] `StoreComplianceDocumentRequest` with file validation (pdf/jpg/jpeg/png, max 10MB), document_type required
+- [x] `UpdateComplianceDocumentRequest`
+- [x] `ApproveComplianceDocumentRequest`
+- [x] `RejectComplianceDocumentRequest` (reason required, min 10 chars)
+
+### Task 7 — Controller ✅
+- [x] `ComplianceDocumentController` with index, store, show, approve, reject — all thin (delegated to service)
+
+### Task 8 — API Routes ✅
+- [x] `GET /api/v1/compliance/documents` — index
+- [x] `POST /api/v1/compliance/documents` — store (file upload)
+- [x] `GET /api/v1/compliance/documents/{id}` — show
+- [x] `POST /api/v1/compliance/documents/{id}/approve` — approve
+- [x] `POST /api/v1/compliance/documents/{id}/reject` — reject
+- [x] All protected with `auth:sanctum`
+
+### Task 9 — Tests ✅
+- [x] 16 tests: upload, invalid file, oversize file, list, show, approve, reject, reject requires reason, reject requires 10 chars, non-auth denied, already-approved denied, expired detection, audit logs on approve/reject, unauthorized, unauthenticated
+
+### Task 10 — Frontend ✅
+- [x] `frontend/src/features/compliance/` with types, schemas, api, hooks, pages, components subdirs
+- [x] Types: `ComplianceDocument`, `ComplianceFilters`, enums for status/type
+- [x] Schema: `complianceUploadSchema` with file validation + expiry refinement
+- [x] API client: `complianceApi` (list, get, upload, approve, reject)
+- [x] Hooks: `useComplianceDocuments`, `useComplianceDocument`, `useUploadComplianceDocument`, `useApproveComplianceDocument`, `useRejectComplianceDocument`
+- [x] Pages: `ComplianceList` (DataTable + filters), `ComplianceDetail` (info rows + review action), `ComplianceReview` (approve/reject with inline reason), `ComplianceUpload` (form with file + dates)
+
+### Task 11 — Navigation ✅
+- [x] Compliance nav item already exists in `navigation.ts`
+- [x] Added `permissions: ['compliance.view']`
+- [x] Routes registered in `routes.tsx` (list, upload, detail, review)
+
+### Task 12 — Verification ✅
+- [x] Backend: `php artisan test` — 63 passed (172 assertions)
+- [x] Backend: `vendor/bin/pint --test` — 115 files PASS
+- [x] Frontend: `npm run lint` — 0 errors, 3 warnings (pre-existing)
+- [x] Frontend: `npm run build` — 0 errors
+- [x] Frontend: `npm test` — 34 passed (7 test files)
+
+### Task 13 — Documentation ✅
+- [x] Update memory.md (module status + change log)
+- [x] Update task.md
+- [x] Update AGENTS.md (module status table)

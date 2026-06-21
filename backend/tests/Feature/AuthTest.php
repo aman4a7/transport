@@ -49,7 +49,7 @@ test('login succeeds with valid credentials', function (): void {
     expect($response['data']['email'])->toBe('transport@example.com');
     expect($response['data']['roles'])->toHaveCount(1);
     expect($response['data']['roles'][0]['slug'])->toBe('transport_manager');
-    expect($response['data']['roles'][0]['permissions'])->toHaveCount(21);
+    expect($response['data']['roles'][0]['permissions'])->toHaveCount(27);
     expect($response['data']['roles'][0]['permissions'][0])->toHaveKeys(['id', 'name', 'slug']);
 });
 
@@ -111,7 +111,7 @@ test('authenticated user can access me endpoint', function (): void {
     expect($response['data']['email'])->toBe('admin@example.com');
     expect($response['data']['roles'])->toHaveCount(1);
     expect($response['data']['roles'][0]['slug'])->toBe('system_administrator');
-    expect($response['data']['roles'][0]['permissions'])->toHaveCount(54);
+    expect($response['data']['roles'][0]['permissions'])->toHaveCount(57);
 });
 
 test('logout succeeds when authenticated', function (): void {

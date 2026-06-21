@@ -63,6 +63,9 @@ class PermissionSeeder extends Seeder
 
             // Compliance
             ['name' => 'View compliance records', 'slug' => 'compliance.view', 'group' => 'compliance'],
+            ['name' => 'Create compliance documents', 'slug' => 'compliance.create', 'group' => 'compliance'],
+            ['name' => 'Update compliance documents', 'slug' => 'compliance.update', 'group' => 'compliance'],
+            ['name' => 'Delete compliance documents', 'slug' => 'compliance.delete', 'group' => 'compliance'],
             ['name' => 'Verify compliance documents', 'slug' => 'compliance.verify', 'group' => 'compliance'],
             ['name' => 'Reject compliance documents', 'slug' => 'compliance.reject', 'group' => 'compliance'],
 
