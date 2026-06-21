@@ -32,7 +32,8 @@ Integrated Fleet, Passenger, Driver Compliance, Contract, Fuel, and Garage Manag
 | Fleet (Vehicle, Driver, Owner) | ✅ | ✅ | ✅ |
 | Passenger | ✅ | ✅ | ✅ |
 | Compliance | ✅ | ✅ | ✅ |
-| Route, Trip, Fuel, Garage, Contract, Reports | ❌ | ❌ | ❌ |
+| Route | ✅ | ✅ | ✅ |
+| Trip, Fuel, Garage, Contract, Reports | ❌ | ❌ | ❌ |
 
 ## Architecture
 - **Frontend:** React 19 + TypeScript 6 + Vite 8 SPA (separate repo from backend, NOT Inertia). Entry: `frontend/src/main.tsx`.

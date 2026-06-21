@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\V1\ComplianceDocumentController;
 use App\Http\Controllers\Api\V1\DriverController;
 use App\Http\Controllers\Api\V1\OwnerController;
 use App\Http\Controllers\Api\V1\PassengerController;
+use App\Http\Controllers\Api\V1\RouteController;
 use App\Http\Controllers\Api\V1\VehicleController;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Route;
@@ -43,6 +44,7 @@ Route::prefix('v1')->group(function (): void {
         Route::apiResource('drivers', DriverController::class);
         Route::apiResource('owners', OwnerController::class);
         Route::apiResource('passengers', PassengerController::class);
+        Route::apiResource('routes', RouteController::class);
 
         Route::prefix('compliance')->group(function (): void {
             Route::get('documents', [ComplianceDocumentController::class, 'index'])->name('compliance.documents.index');

@@ -54,7 +54,7 @@
 | Auth/RBAC | ✅ | ⚙️ | ✅ | In progress |
 | Fleet (Vehicles, Drivers, Owners) | ✅ | ✅ | ✅ | Done |
 | Passenger | ✅ | ✅ | ✅ | Done |
-| Route | ❌ | ❌ | ❌ | Not started |
+| Route | ✅ | ✅ | ✅ | Done |
 | Trip | ❌ | ❌ | ❌ | Not started |
 | Fuel | ❌ | ❌ | ❌ | Not started |
 | Garage | ❌ | ❌ | ❌ | Not started |
@@ -296,6 +296,24 @@
 - Updated `ConfirmDialog` message prop to accept `React.ReactNode` (required for reject dialog with inline textarea)
 - Backend: 63 tests pass (172 assertions), Pint 115 files PASS
 - Frontend: build 0 errors, lint 0 errors (3 pre-existing warnings), 34 tests pass
+
+### Phase 2.3 — Route Module (date: today)
+- Created migration `2026_06_21_000001_create_routes_table` (name, code unique, origin, destination, distance, duration, capacity, status, audit fields, soft deletes)
+- Created `RouteStatus` enum (active, inactive)
+- Created `Route` model with Auditable trait, casts, HasFactory, SoftDeletes
+- Created `RouteService` with list (search by name/origin/destination/code, status filter), create, update, delete, getWithRelations
+- Created `RoutePolicy` with viewAny, view, create, update, delete (all gated by route.* permissions)
+- Created `StoreRouteRequest` (name, origin, destination required; code unique optional) and `UpdateRouteRequest` (sometimes validation, code unique ignoring self)
+- Created `RouteController` (thin, ≤10 lines/method, delegates to RouteService)
+- Added `Route::apiResource('routes', RouteController)` to api.php under auth:sanctum
+- Routes permissions already existed in PermissionSeeder, assigned to transport_manager in RolePermissionSeeder — no changes needed
+- Created `RouteFactory` with random city pairs, codes, distances, durations, capacities
+- Created `RouteTest` with 9 tests (list, create, duplicate code, missing required fields, show, update, delete, unauthorized, unauthenticated)
+- Created frontend: `src/features/routes/` with types (`Route`, `RouteStatus`, `CreateRouteData`, `RouteFilters`), schema (zod with openapi-like validation), API client, hooks (`useRoutes`, `useRoute`, `useCreateRoute`, `useUpdateRoute`, `useDeleteRoute`)
+- Created pages: `RouteList` (DataTable + status filter + search), `RouteForm` (create/edit with server error handling), `RouteDetail` (KpiCards + info rows + delete)
+- Updated frontend routes: `/app/routes`, `/app/routes/new`, `/app/routes/:id`, `/app/routes/:id/edit`
+- Wrote frontend tests: `useRoutes.test.tsx` (2 tests), `RouteList.test.tsx` (3 tests)
+- Final: **83 backend tests pass** (207 assertions), **Pint 130 files PASS**, frontend lint 0 errors (3 pre-existing warnings), frontend build 0 errors, frontend **39 tests pass**
 
 ### Compliance Expiry Loop Closed (date: today)
 - Created `app/Console/Commands/Compliance/CheckExpirations.php` — scheduled daily at 01:00 via `routes/console.php`, marks approved documents as expired where `expires_at` has passed, uses `ComplianceDocumentService::markExpired()` which triggers individual audit log entries

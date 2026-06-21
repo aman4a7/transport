@@ -364,3 +364,34 @@
 - [x] Update memory.md (module status + change log)
 - [x] Update task.md
 - [x] Update AGENTS.md (module status table)
+
+## Phase 2.3 — Route Module ✅
+
+### Backend ✅
+- [x] Create migration `2026_06_21_000001_create_routes_table` (name, code unique, origin, destination, distance_km, estimated_duration_minutes, capacity, status)
+- [x] Create `RouteStatus` enum (active, inactive)
+- [x] Create `Route` model with Auditable, HasFactory, SoftDeletes
+- [x] Create `RouteService` with list (search, filter), create, update, delete
+- [x] Create `RoutePolicy` with RBAC (routes.view, routes.create, routes.update, routes.delete)
+- [x] Create `StoreRouteRequest` (name, origin, destination required; code unique)
+- [x] Create `UpdateRouteRequest` (sometimes, code unique ignoring self)
+- [x] Create `RouteController` (thin, delegates to RouteService)
+- [x] Register `apiResource('routes', RouteController)` under auth:sanctum
+- [x] Permissions already exist (routes.view/create/update/delete in PermissionSeeder, assigned to transport_manager)
+- [x] Create RouteFactory
+- [x] Write 9 Route tests (list, create, duplicate code, missing required fields, show, update, delete, unauthorized, unauthenticated)
+
+### Frontend ✅
+- [x] Create `src/features/routes/` with types, schema, api, hooks, pages, __tests__
+- [x] Types: Route, RouteStatus, CreateRouteData, RouteFilters
+- [x] Schema: routeSchema with Zod validation
+- [x] API client: routeApi (list, get, create, update, delete)
+- [x] Hooks: useRoutes, useRoute, useCreateRoute, useUpdateRoute, useDeleteRoute
+- [x] Pages: RouteList (DataTable + filters), RouteForm (create/edit), RouteDetail (KpiCards + info)
+- [x] Frontend routes: /app/routes, /app/routes/new, /app/routes/:id, /app/routes/:id/edit
+
+### Tests ✅
+- [x] Backend: 9 Route tests pass (22 assertions)
+- [x] Frontend: 5 Route tests pass (3 list + 2 hook)
+- [x] Full suite: 83 backend tests pass (207 assertions), Pint 130 files PASS
+- [x] Full frontend: lint 0 errors, build 0 errors, 39 tests pass

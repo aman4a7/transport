@@ -16,6 +16,9 @@ import { OwnerDetail } from '@/features/owners/pages/OwnerDetail';
 import { PassengerList } from '@/features/passengers/pages/PassengerList';
 import { PassengerForm } from '@/features/passengers/pages/PassengerForm';
 import { PassengerDetail } from '@/features/passengers/pages/PassengerDetail';
+import { RouteList } from '@/features/routes/pages/RouteList';
+import { RouteForm } from '@/features/routes/pages/RouteForm';
+import { RouteDetail } from '@/features/routes/pages/RouteDetail';
 import { ComplianceList } from '@/features/compliance/pages/ComplianceList';
 import { ComplianceDetail } from '@/features/compliance/pages/ComplianceDetail';
 import { ComplianceReview } from '@/features/compliance/pages/ComplianceReview';
@@ -53,7 +56,10 @@ export const routes: RouteObject[] = [
           { path: '/app/passengers/new', element: <PassengerForm /> },
           { path: '/app/passengers/:id', element: <PassengerDetail /> },
           { path: '/app/passengers/:id/edit', element: <PassengerForm /> },
-          { path: '/app/routes', element: <div>Routes</div> },
+          { path: '/app/routes', element: <RouteList /> },
+          { path: '/app/routes/new', element: <RouteForm /> },
+          { path: '/app/routes/:id', element: <RouteDetail /> },
+          { path: '/app/routes/:id/edit', element: <RouteForm /> },
           { path: '/app/trips', element: <div>Trips</div> },
           { path: '/app/passengers', element: <div>Passengers</div> },
           { path: '/app/fuel', element: <div>Fuel</div> },
