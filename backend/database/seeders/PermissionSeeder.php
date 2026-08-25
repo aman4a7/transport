@@ -76,6 +76,10 @@ class PermissionSeeder extends Seeder
             ['name' => 'Delete contracts', 'slug' => 'contracts.delete', 'group' => 'contracts'],
             ['name' => 'Process payments', 'slug' => 'contracts.process_payments', 'group' => 'contracts'],
 
+            // Notifications
+            ['name' => 'View notifications', 'slug' => 'notifications.view', 'group' => 'notifications'],
+            ['name' => 'Manage notifications', 'slug' => 'notifications.manage', 'group' => 'notifications'],
+
             // Reports
             ['name' => 'View reports', 'slug' => 'reports.view', 'group' => 'reports'],
             ['name' => 'Generate reports', 'slug' => 'reports.generate', 'group' => 'reports'],

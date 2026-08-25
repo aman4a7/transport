@@ -3,11 +3,14 @@ import { Menu, Bell, ChevronDown, LogOut, UserCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAppShell } from './appShellContext';
 import { useAuth } from '@/shared/hooks/useAuth';
+import { useUnreadCount } from '@/features/notifications/hooks/useNotifications';
+import { UnreadBadge } from '@/features/notifications/components/UnreadBadge';
 
 export function Topbar() {
   const { pageTitle, toggleSidebar, mobileSidebarOpen, setMobileSidebarOpen, isMobile } =
     useAppShell();
   const { user, logout, isLogoutPending } = useAuth();
+  const { data: unreadCount } = useUnreadCount();
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -62,8 +65,11 @@ export function Topbar() {
           type="button"
           className="topbar-icon-btn"
           aria-label="Notifications"
+          onClick={() => navigate('/app/notifications')}
+          style={{ position: 'relative' }}
         >
           <Bell size={20} />
+          <UnreadBadge count={unreadCount ?? 0} />
         </button>
 
         <div className="topbar-user" ref={dropdownRef}>

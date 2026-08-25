@@ -71,4 +71,11 @@ describe('RouteList', () => {
     const addButtons = screen.getAllByText('Add Route');
     expect(addButtons.length).toBeGreaterThanOrEqual(1);
   });
+
+  test('renders distance with one decimal place', () => {
+    vi.mocked(useRoutes).mockReturnValue(mockWithData());
+    renderWithProviders(<RouteList />);
+    expect(screen.getByText('560.5 km')).toBeTruthy();
+    expect(screen.getByText('730.2 km')).toBeTruthy();
+  });
 });

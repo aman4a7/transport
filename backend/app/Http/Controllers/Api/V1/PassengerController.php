@@ -19,7 +19,7 @@ class PassengerController extends Controller
     public function index(Request $request): JsonResponse
     {
         $this->authorize('viewAny', Passenger::class);
-        $result = $this->passengerService->list($request->all());
+        $result = $this->passengerService->list($request->all(), $request->user());
 
         return response()->json([
             'success' => true,

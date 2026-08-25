@@ -128,3 +128,40 @@ test('creating passenger with duplicate employee_id fails', function (): void {
 
     $response->assertStatus(422);
 });
+
+test('passenger can list only their own records', function (): void {
+    $role = Role::where('slug', 'passenger')->first();
+    $user = User::factory()->create();
+    $user->roles()->attach($role->id, ['assigned_at' => now()]);
+    Passenger::factory()->create(['user_id' => $user->id, 'email' => 'passenger.own@university.edu.et']);
+    Passenger::factory()->create(['email' => 'passenger.other@university.edu.et']);
+
+    $response = $this->actingAs($user)->getJson('/api/v1/passengers');
+
+    $response->assertOk();
+    expect($response['data'])->toHaveCount(1);
+    expect($response['data'][0]['user_id'])->toBe($user->id);
+});
+
+test('passenger can view their own record', function (): void {
+    $role = Role::where('slug', 'passenger')->first();
+    $user = User::factory()->create();
+    $user->roles()->attach($role->id, ['assigned_at' => now()]);
+    $passenger = Passenger::factory()->create(['user_id' => $user->id]);
+
+    $response = $this->actingAs($user)->getJson("/api/v1/passengers/{$passenger->id}");
+
+    $response->assertOk()->assertJsonStructure(['success', 'data']);
+});
+
+test('passenger cannot view another passenger record', function (): void {
+    $role = Role::where('slug', 'passenger')->first();
+    $user = User::factory()->create();
+    $user->roles()->attach($role->id, ['assigned_at' => now()]);
+    Passenger::factory()->create(['user_id' => $user->id]);
+    $otherPassenger = Passenger::factory()->create();
+
+    $response = $this->actingAs($user)->getJson("/api/v1/passengers/{$otherPassenger->id}");
+
+    $response->assertStatus(403);
+});

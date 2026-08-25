@@ -6,6 +6,7 @@ use App\Domain\Compliance\Enums\ComplianceDocumentType;
 use App\Domain\Compliance\Enums\ComplianceStatus;
 use App\Domain\Driver\Models\Driver;
 use App\Domain\Owner\Models\Owner;
+use App\Domain\Shared\Traits\Auditable;
 use App\Domain\Vehicle\Models\Vehicle;
 use App\Models\User;
 use Database\Factories\ComplianceDocumentFactory;
@@ -17,7 +18,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 class ComplianceDocument extends Model
 {
     /** @use HasFactory<ComplianceDocumentFactory> */
-    use HasFactory;
+    use Auditable, HasFactory;
 
     protected $table = 'compliance_documents';
 

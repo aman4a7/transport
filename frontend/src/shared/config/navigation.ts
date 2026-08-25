@@ -13,6 +13,7 @@ import {
   FileText,
   BarChart3,
   Settings,
+  Bell,
 } from 'lucide-react';
 
 export interface NavItem {
@@ -68,6 +69,7 @@ export const navigationConfig: NavSection[] = [
     label: 'Administration',
     items: [
       { label: 'Reports', path: '/app/reports', icon: BarChart3 },
+      { label: 'Notifications', path: '/app/notifications', icon: Bell },
       { label: 'Settings', path: '/app/settings', icon: Settings },
     ],
   },

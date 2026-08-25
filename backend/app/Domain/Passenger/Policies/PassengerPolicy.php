@@ -17,7 +17,15 @@ class PassengerPolicy
 
     public function view(User $user, Passenger $passenger): bool
     {
-        return $user->hasPermission('passengers.view');
+        if (! $user->hasPermission('passengers.view')) {
+            return false;
+        }
+
+        if ($user->hasRole('passenger')) {
+            return $passenger->user_id === $user->id;
+        }
+
+        return true;
     }
 
     public function create(User $user): bool

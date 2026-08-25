@@ -19,10 +19,26 @@ import { PassengerDetail } from '@/features/passengers/pages/PassengerDetail';
 import { RouteList } from '@/features/routes/pages/RouteList';
 import { RouteForm } from '@/features/routes/pages/RouteForm';
 import { RouteDetail } from '@/features/routes/pages/RouteDetail';
+import { TripList } from '@/features/trips/pages/TripList';
+import { TripForm } from '@/features/trips/pages/TripForm';
+import { TripDetail } from '@/features/trips/pages/TripDetail';
+import { FuelList } from '@/features/fuel/pages/FuelList';
+import { FuelIssue } from '@/features/fuel/pages/FuelIssue';
+import { FuelStock } from '@/features/fuel/pages/FuelStock';
+import { GarageList } from '@/features/garage/pages/GarageList';
+import { GarageForm } from '@/features/garage/pages/GarageForm';
+import { GarageDetail } from '@/features/garage/pages/GarageDetail';
 import { ComplianceList } from '@/features/compliance/pages/ComplianceList';
 import { ComplianceDetail } from '@/features/compliance/pages/ComplianceDetail';
 import { ComplianceReview } from '@/features/compliance/pages/ComplianceReview';
 import { ComplianceUpload } from '@/features/compliance/pages/ComplianceUpload';
+import { ContractList } from '@/features/contract/pages/ContractList';
+import { ContractForm } from '@/features/contract/pages/ContractForm';
+import { ContractDetail } from '@/features/contract/pages/ContractDetail';
+import { ReportList } from '@/features/report/pages/ReportList';
+import { ReportDetail } from '@/features/report/pages/ReportDetail';
+import { NotificationCenter } from '@/features/notifications/pages/NotificationCenter';
+import { NotificationSettings } from '@/features/notifications/pages/NotificationSettings';
 
 export const routes: RouteObject[] = [
   {
@@ -60,16 +76,30 @@ export const routes: RouteObject[] = [
           { path: '/app/routes/new', element: <RouteForm /> },
           { path: '/app/routes/:id', element: <RouteDetail /> },
           { path: '/app/routes/:id/edit', element: <RouteForm /> },
-          { path: '/app/trips', element: <div>Trips</div> },
-          { path: '/app/passengers', element: <div>Passengers</div> },
-          { path: '/app/fuel', element: <div>Fuel</div> },
-          { path: '/app/garage', element: <div>Garage</div> },
+          { path: '/app/trips', element: <TripList /> },
+          { path: '/app/trips/new', element: <TripForm /> },
+          { path: '/app/trips/:id', element: <TripDetail /> },
+          { path: '/app/trips/:id/edit', element: <TripForm /> },
+          { path: '/app/fuel', element: <FuelList /> },
+          { path: '/app/fuel/issue', element: <FuelIssue /> },
+          { path: '/app/fuel/restock', element: <FuelStock /> },
+          { path: '/app/fuel/stock', element: <FuelStock /> },
+          { path: '/app/garage', element: <GarageList /> },
+          { path: '/app/garage/new', element: <GarageForm /> },
+          { path: '/app/garage/:id', element: <GarageDetail /> },
+          { path: '/app/garage/:id/edit', element: <GarageForm /> },
           { path: '/app/compliance', element: <ComplianceList /> },
           { path: '/app/compliance/upload', element: <ComplianceUpload /> },
           { path: '/app/compliance/:id', element: <ComplianceDetail /> },
           { path: '/app/compliance/:id/review', element: <ComplianceReview /> },
-          { path: '/app/contracts', element: <div>Contracts</div> },
-          { path: '/app/reports', element: <div>Reports</div> },
+          { path: '/app/contracts', element: <ContractList /> },
+          { path: '/app/contracts/new', element: <ContractForm /> },
+          { path: '/app/contracts/:id', element: <ContractDetail /> },
+          { path: '/app/contracts/:id/edit', element: <ContractForm /> },
+          { path: '/app/reports', element: <ReportList /> },
+          { path: '/app/reports/:type', element: <ReportDetail /> },
+          { path: '/app/notifications', element: <NotificationCenter /> },
+          { path: '/app/notifications/settings', element: <NotificationSettings /> },
           { path: '/app/settings', element: <div>Settings</div> },
         ],
       },

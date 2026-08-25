@@ -2,12 +2,22 @@
 
 namespace App\Domain\Owner\Services;
 
+use App\Domain\Contract\Models\Contract;
 use App\Domain\Owner\Models\Owner;
+use App\Domain\Shared\Exceptions\BusinessRuleException;
+use App\Domain\Shared\Services\AuditLogService;
+use App\Domain\Shared\Support\SafeSort;
+use App\Domain\Vehicle\Models\Vehicle;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class OwnerService
 {
+    public function __construct(
+        private readonly AuditLogService $auditLogService,
+    ) {}
+
     public function list(array $filters = []): LengthAwarePaginator
     {
         $query = Owner::query();
@@ -25,8 +35,12 @@ class OwnerService
             $query->where('status', $filters['status']);
         }
 
-        $sortField = $filters['sort_by'] ?? 'created_at';
-        $sortOrder = $filters['sort_dir'] ?? 'desc';
+        $sortField = SafeSort::field(
+            ['created_at', 'company_name', 'contact_person', 'email', 'status'],
+            $filters['sort_by'] ?? null,
+            'created_at',
+        );
+        $sortOrder = SafeSort::direction($filters['sort_dir'] ?? null);
         $perPage = $filters['per_page'] ?? 15;
 
         return $query->orderBy($sortField, $sortOrder)->paginate($perPage);
@@ -35,14 +49,23 @@ class OwnerService
     public function create(array $data): Owner
     {
         return DB::transaction(function () use ($data): Owner {
-            return Owner::create($data);
+            $data['created_by'] = Auth::id();
+            $owner = Owner::create($data);
+
+            $this->auditLogService->log('owner_created', $owner, null, null, $owner->toArray());
+
+            return $owner;
         });
     }
 
     public function update(Owner $owner, array $data): Owner
     {
         return DB::transaction(function () use ($owner, $data): Owner {
+            $old = $owner->toArray();
+            $data['updated_by'] = Auth::id();
             $owner->update($data);
+
+            $this->auditLogService->log('owner_updated', $owner, null, $old, $owner->fresh()->toArray());
 
             return $owner->fresh();
         });
@@ -50,7 +73,31 @@ class OwnerService
 
     public function delete(Owner $owner): void
     {
-        $owner->delete();
+        DB::transaction(function () use ($owner): void {
+            $hasVehicles = Vehicle::where('owner_id', $owner->id)->exists();
+
+            if ($hasVehicles) {
+                throw new BusinessRuleException(
+                    message: 'Owner has associated vehicles.',
+                    rule: 'owner_has_vehicles',
+                );
+            }
+
+            $hasActiveContracts = Contract::where('owner_id', $owner->id)
+                ->where('status', 'active')
+                ->exists();
+
+            if ($hasActiveContracts) {
+                throw new BusinessRuleException(
+                    message: 'Owner has active contracts.',
+                    rule: 'owner_has_active_contracts',
+                );
+            }
+
+            $owner->delete();
+
+            $this->auditLogService->log('owner_deleted', $owner);
+        });
     }
 
     public function getWithRelations(Owner $owner): Owner

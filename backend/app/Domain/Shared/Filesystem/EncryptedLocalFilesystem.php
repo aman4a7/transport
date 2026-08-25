@@ -35,4 +35,32 @@ class EncryptedLocalFilesystem extends LocalFilesystemAdapter
             throw UnableToWriteFile::atLocation($path, previous: $e);
         }
     }
+
+    public function writeStream(string $path, $contents, Config $config): void
+    {
+        try {
+            $plaintext = stream_get_contents($contents);
+
+            if ($plaintext === false) {
+                throw new \RuntimeException('Unable to read from source stream.');
+            }
+
+            $this->write($path, $plaintext, $config);
+        } catch (\Exception $e) {
+            throw UnableToWriteFile::atLocation($path, previous: $e);
+        }
+    }
+
+    public function readStream(string $path)
+    {
+        try {
+            $stream = fopen('php://temp', 'r+b');
+            fwrite($stream, $this->read($path));
+            rewind($stream);
+
+            return $stream;
+        } catch (\Exception $e) {
+            throw UnableToReadFile::fromLocation($path, previous: $e);
+        }
+    }
 }

@@ -20,7 +20,7 @@ class ComplianceDocumentController extends Controller
     public function index(Request $request): JsonResponse
     {
         $this->authorize('viewAny', ComplianceDocument::class);
-        $result = $this->complianceDocumentService->list($request->all());
+        $result = $this->complianceDocumentService->list($request->all(), $request->user());
 
         return response()->json([
             'success' => true,

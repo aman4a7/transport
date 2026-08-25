@@ -34,6 +34,7 @@ export interface ActionDef<T> {
   icon?: ReactNode;
   onClick: (row: T) => void;
   disabled?: (row: T) => boolean;
+  show?: (row: T) => boolean;
   variant?: 'primary' | 'danger' | 'neutral';
 }
 

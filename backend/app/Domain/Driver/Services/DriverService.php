@@ -3,11 +3,20 @@
 namespace App\Domain\Driver\Services;
 
 use App\Domain\Driver\Models\Driver;
+use App\Domain\Shared\Exceptions\BusinessRuleException;
+use App\Domain\Shared\Services\AuditLogService;
+use App\Domain\Shared\Support\SafeSort;
+use App\Domain\Trip\Models\Trip;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class DriverService
 {
+    public function __construct(
+        private readonly AuditLogService $auditLogService,
+    ) {}
+
     public function list(array $filters = []): LengthAwarePaginator
     {
         $query = Driver::query();
@@ -29,8 +38,12 @@ class DriverService
             $query->where('license_category', $filters['license_category']);
         }
 
-        $sortField = $filters['sort_by'] ?? 'created_at';
-        $sortOrder = $filters['sort_dir'] ?? 'desc';
+        $sortField = SafeSort::field(
+            ['created_at', 'license_number', 'license_category', 'status'],
+            $filters['sort_by'] ?? null,
+            'created_at',
+        );
+        $sortOrder = SafeSort::direction($filters['sort_dir'] ?? null);
         $perPage = $filters['per_page'] ?? 15;
 
         return $query->orderBy($sortField, $sortOrder)->paginate($perPage);
@@ -39,14 +52,23 @@ class DriverService
     public function create(array $data): Driver
     {
         return DB::transaction(function () use ($data): Driver {
-            return Driver::create($data);
+            $data['created_by'] = Auth::id();
+            $driver = Driver::create($data);
+
+            $this->auditLogService->log('driver_created', $driver, null, null, $driver->toArray());
+
+            return $driver;
         });
     }
 
     public function update(Driver $driver, array $data): Driver
     {
         return DB::transaction(function () use ($driver, $data): Driver {
+            $old = $driver->toArray();
+            $data['updated_by'] = Auth::id();
             $driver->update($data);
+
+            $this->auditLogService->log('driver_updated', $driver, null, $old, $driver->fresh()->toArray());
 
             return $driver->fresh();
         });
@@ -54,7 +76,22 @@ class DriverService
 
     public function delete(Driver $driver): void
     {
-        $driver->delete();
+        DB::transaction(function () use ($driver): void {
+            $hasActiveTrips = Trip::where('driver_id', $driver->id)
+                ->whereIn('status', ['scheduled', 'in_progress'])
+                ->exists();
+
+            if ($hasActiveTrips) {
+                throw new BusinessRuleException(
+                    message: 'Driver has active or scheduled trips.',
+                    rule: 'driver_has_active_trips',
+                );
+            }
+
+            $driver->delete();
+
+            $this->auditLogService->log('driver_deleted', $driver);
+        });
     }
 
     public function getWithRelations(Driver $driver): Driver

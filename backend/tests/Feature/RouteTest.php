@@ -50,6 +50,19 @@ test('transport manager can create a route', function (): void {
     expect($response['data']['name'])->toBe('Addis Ababa - Bahir Dar');
 });
 
+test('route distance is serialized as a real number', function (): void {
+    $role = Role::where('slug', 'transport_manager')->first();
+    $user = User::factory()->create();
+    $user->roles()->attach($role->id, ['assigned_at' => now()]);
+    $route = Route::factory()->create(['distance_km' => 560.5]);
+
+    $response = $this->actingAs($user)->getJson("/api/v1/routes/{$route->id}");
+
+    $response->assertOk();
+    expect($response['data']['distance_km'])->toBeFloat();
+    expect($response['data']['distance_km'])->toBe(560.5);
+});
+
 test('creating route with duplicate code fails', function (): void {
     $role = Role::where('slug', 'transport_manager')->first();
     $user = User::factory()->create();

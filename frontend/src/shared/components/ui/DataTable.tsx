@@ -190,7 +190,7 @@ export function DataTable<T extends Record<string, unknown>>({
                 ))}
                 {actions && actions.length > 0 && (
                   <td className="row-actions" style={{ justifyContent: 'center' }}>
-                    {actions.map((action, idx) => {
+                    {actions.filter((a) => !a.show || a.show(row.original)).map((action, idx) => {
                       const isDisabled = action.disabled?.(row.original) ?? false;
                       const btnClass =
                         action.variant === 'danger'

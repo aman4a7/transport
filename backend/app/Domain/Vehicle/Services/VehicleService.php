@@ -2,13 +2,23 @@
 
 namespace App\Domain\Vehicle\Services;
 
+use App\Domain\Contract\Models\Contract;
+use App\Domain\Garage\Models\MaintenanceRecord;
 use App\Domain\Shared\Exceptions\BusinessRuleException;
+use App\Domain\Shared\Services\AuditLogService;
+use App\Domain\Shared\Support\SafeSort;
+use App\Domain\Trip\Models\Trip;
 use App\Domain\Vehicle\Models\Vehicle;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class VehicleService
 {
+    public function __construct(
+        private readonly AuditLogService $auditLogService,
+    ) {}
+
     public function list(array $filters = []): LengthAwarePaginator
     {
         $query = Vehicle::query();
@@ -34,8 +44,12 @@ class VehicleService
             $query->where('owner_id', $filters['owner_id']);
         }
 
-        $sortField = $filters['sort_by'] ?? 'created_at';
-        $sortOrder = $filters['sort_dir'] ?? 'desc';
+        $sortField = SafeSort::field(
+            ['created_at', 'plate_number', 'make', 'model', 'year', 'category', 'status'],
+            $filters['sort_by'] ?? null,
+            'created_at',
+        );
+        $sortOrder = SafeSort::direction($filters['sort_dir'] ?? null);
         $perPage = $filters['per_page'] ?? 15;
 
         return $query->orderBy($sortField, $sortOrder)->paginate($perPage);
@@ -51,7 +65,12 @@ class VehicleService
                 );
             }
 
-            return Vehicle::create($data);
+            $data['created_by'] = Auth::id();
+            $vehicle = Vehicle::create($data);
+
+            $this->auditLogService->log('vehicle_created', $vehicle, null, null, $vehicle->toArray());
+
+            return $vehicle;
         });
     }
 
@@ -66,7 +85,11 @@ class VehicleService
                 );
             }
 
+            $old = $vehicle->toArray();
+            $data['updated_by'] = Auth::id();
             $vehicle->update($data);
+
+            $this->auditLogService->log('vehicle_updated', $vehicle, null, $old, $vehicle->fresh()->toArray());
 
             return $vehicle->fresh();
         });
@@ -74,7 +97,44 @@ class VehicleService
 
     public function delete(Vehicle $vehicle): void
     {
-        $vehicle->delete();
+        DB::transaction(function () use ($vehicle): void {
+            $hasActiveTrips = Trip::where('vehicle_id', $vehicle->id)
+                ->whereIn('status', ['scheduled', 'in_progress'])
+                ->exists();
+
+            if ($hasActiveTrips) {
+                throw new BusinessRuleException(
+                    message: "Vehicle {$vehicle->plate_number} has active or scheduled trips.",
+                    rule: 'vehicle_has_active_trips',
+                );
+            }
+
+            $hasInProgressMaintenance = MaintenanceRecord::where('vehicle_id', $vehicle->id)
+                ->where('status', 'in_progress')
+                ->exists();
+
+            if ($hasInProgressMaintenance) {
+                throw new BusinessRuleException(
+                    message: "Vehicle {$vehicle->plate_number} has in-progress maintenance.",
+                    rule: 'vehicle_has_in_progress_maintenance',
+                );
+            }
+
+            $hasActiveContract = Contract::where('vehicle_id', $vehicle->id)
+                ->where('status', 'active')
+                ->exists();
+
+            if ($hasActiveContract) {
+                throw new BusinessRuleException(
+                    message: "Vehicle {$vehicle->plate_number} has an active contract.",
+                    rule: 'vehicle_has_active_contract',
+                );
+            }
+
+            $vehicle->delete();
+
+            $this->auditLogService->log('vehicle_deleted', $vehicle);
+        });
     }
 
     public function getWithRelations(Vehicle $vehicle): Vehicle

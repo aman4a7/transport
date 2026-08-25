@@ -9,3 +9,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('compliance:check-expirations')->dailyAt('01:00');
+Schedule::command('notifications:check')->hourly();

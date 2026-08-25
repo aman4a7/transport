@@ -21,6 +21,7 @@ class RolePermissionSeeder extends Seeder
                 'trips.view', 'trips.create', 'trips.update', 'trips.delete', 'trips.assign',
                 'passengers.view', 'passengers.create', 'passengers.update', 'passengers.delete',
                 'reports.view', 'reports.generate',
+                'notifications.view', 'notifications.manage',
             ],
 
             'compliance_officer' => [
@@ -30,28 +31,33 @@ class RolePermissionSeeder extends Seeder
                 'contracts.view',
                 'owners.view',
                 'reports.view',
+                'notifications.view',
             ],
 
             'fuel_attendant' => [
                 'fuel.view', 'fuel.create', 'fuel.update', 'fuel.view_stock', 'fuel.adjust_stock',
                 'vehicles.view',
+                'notifications.view',
             ],
 
             'garage_officer' => [
                 'garage.view', 'garage.create', 'garage.update', 'garage.delete',
                 'vehicles.view',
+                'notifications.view',
             ],
 
             'finance_officer' => [
-                'contracts.view', 'contracts.create', 'contracts.update', 'contracts.process_payments',
+                'contracts.view', 'contracts.create', 'contracts.update', 'contracts.delete', 'contracts.process_payments',
                 'owners.view',
                 'reports.view', 'reports.generate',
+                'notifications.view',
             ],
 
             'driver' => [
                 'trips.view',
                 'vehicles.view',
                 'compliance.view', 'compliance.create', 'compliance.update',
+                'notifications.view',
             ],
 
             'contractor' => [
@@ -59,16 +65,19 @@ class RolePermissionSeeder extends Seeder
                 'contracts.view',
                 'compliance.view', 'compliance.create', 'compliance.update',
                 'vehicles.view',
+                'notifications.view',
             ],
 
             'passenger' => [
                 'trips.view',
                 'passengers.view',
+                'notifications.view',
             ],
 
             'auditor' => [
                 'audit.view',
                 'reports.view',
+                'notifications.view',
             ],
         ];
 

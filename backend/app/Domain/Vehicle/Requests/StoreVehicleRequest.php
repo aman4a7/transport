@@ -26,7 +26,6 @@ class StoreVehicleRequest extends FormRequest
             'engine_number' => ['nullable', 'string', 'max:50'],
             'seating_capacity' => ['nullable', 'integer', 'min:1'],
             'fuel_type' => ['sometimes', 'string', 'in:diesel,petrol,electric,hybrid'],
-            'status' => ['sometimes', 'string', 'in:active,in_maintenance,suspended,decommissioned'],
             'registration_expiry' => ['nullable', 'date'],
             'insurance_expiry' => ['nullable', 'date'],
         ];

@@ -3,6 +3,7 @@
 namespace App\Domain\Route\Models;
 
 use App\Domain\Route\Enums\RouteStatus;
+use App\Domain\Shared\Casts\DecimalNumber;
 use App\Domain\Shared\Traits\Auditable;
 use App\Models\User;
 use Database\Factories\RouteFactory;
@@ -26,7 +27,7 @@ class Route extends Model
     protected function casts(): array
     {
         return [
-            'distance_km' => 'decimal:2',
+            'distance_km' => DecimalNumber::class.':2',
             'estimated_duration_minutes' => 'integer',
             'capacity' => 'integer',
             'status' => RouteStatus::class,

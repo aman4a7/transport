@@ -8,6 +8,16 @@ export function formatCurrency(value: number): string {
   return currencyFormatter.format(value);
 }
 
+export function toNumber(value: number | string | null | undefined): number {
+  if (typeof value === 'number') {
+    return value;
+  }
+
+  const parsed = Number(value);
+
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
+
 export function formatNumber(value: number): string {
   return new Intl.NumberFormat('en-US').format(value);
 }
