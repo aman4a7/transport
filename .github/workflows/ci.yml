@@ -51,6 +51,10 @@ jobs:
         working-directory: backend
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
+      - name: Validate composer.json/lock
+        working-directory: backend
+        run: composer validate --strict
+
       - name: Composer audit
         working-directory: backend
         run: composer audit

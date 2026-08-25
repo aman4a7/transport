@@ -19,8 +19,10 @@
 /public/hot
 /public/storage
 /storage/*.key
+/storage/*.php
 /storage/pail
 /vendor
+/reset_*.php
 _ide_helper.php
 Homestead.json
 Homestead.yaml

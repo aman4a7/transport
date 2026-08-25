@@ -3,3 +3,6 @@
 *.log
 .DS_Store
 Thumbs.db
+
+# curl session-cookie jars produced by local API testing
+cookies*.txt

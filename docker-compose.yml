@@ -85,7 +85,9 @@ services:
       POSTGRES_USER: '${DB_USERNAME:-transport}'
       POSTGRES_PASSWORD: '${DB_PASSWORD:-secret}'
     volumes:
-      - pgsql-data:/var/lib/postgresql/data
+      # postgres:18+ images use major-versioned subdirectories under
+      # /var/lib/postgresql — mounting the legacy /data path is an error.
+      - pgsql-data:/var/lib/postgresql
     healthcheck:
       test: ['CMD', 'pg_isready', '-q', '-d', '${DB_DATABASE:-transport}', '-U', '${DB_USERNAME:-transport}']
       interval: 10s
@@ -108,6 +110,95 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - appnet
+    restart: unless-stopped
+
+  # ── Queue Worker (Horizon) ──
+  queue:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: transport-queue
+    volumes:
+      - ./backend:/var/www/backend
+    environment:
+      APP_ENV: '${APP_ENV:-production}'
+      APP_DEBUG: '${APP_DEBUG:-false}'
+      APP_URL: '${APP_URL:-http://localhost:8080}'
+      APP_KEY: '${APP_KEY}'
+      DB_CONNECTION: pgsql
+      DB_HOST: pgsql
+      DB_PORT: '5432'
+      DB_DATABASE: '${DB_DATABASE:-transport}'
+      DB_USERNAME: '${DB_USERNAME:-transport}'
+      DB_PASSWORD: '${DB_PASSWORD:-secret}'
+      REDIS_HOST: redis
+      REDIS_PORT: '6379'
+      REDIS_PASSWORD: '${REDIS_PASSWORD:-null}'
+      SESSION_DRIVER: redis
+      SESSION_ENCRYPT: 'true'
+      SESSION_SECURE_COOKIE: '${SESSION_SECURE_COOKIE:-true}'
+      QUEUE_CONNECTION: redis
+      CACHE_STORE: redis
+      FILESYSTEM_DISK: local
+      LOG_LEVEL: '${LOG_LEVEL:-info}'
+      SANCTUM_STATEFUL_DOMAINS: '${SANCTUM_STATEFUL_DOMAINS:-localhost,localhost:8080}'
+      SESSION_LIFETIME: '120'
+      FRONTEND_URL: '${FRONTEND_URL}'
+    command: ['php', 'artisan', 'horizon']
+    healthcheck:
+      test: ['CMD-SHELL', 'php artisan horizon:status || exit 1']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    depends_on:
+      pgsql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - appnet
+    restart: unless-stopped
+
+  # ── Scheduler (cron loop for artisan schedule:work) ──
+  scheduler:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: transport-scheduler
+    volumes:
+      - ./backend:/var/www/backend
+    environment:
+      APP_ENV: '${APP_ENV:-production}'
+      APP_DEBUG: '${APP_DEBUG:-false}'
+      APP_URL: '${APP_URL:-http://localhost:8080}'
+      APP_KEY: '${APP_KEY}'
+      DB_CONNECTION: pgsql
+      DB_HOST: pgsql
+      DB_PORT: '5432'
+      DB_DATABASE: '${DB_DATABASE:-transport}'
+      DB_USERNAME: '${DB_USERNAME:-transport}'
+      DB_PASSWORD: '${DB_PASSWORD:-secret}'
+      REDIS_HOST: redis
+      REDIS_PORT: '6379'
+      REDIS_PASSWORD: '${REDIS_PASSWORD:-null}'
+      SESSION_DRIVER: redis
+      SESSION_ENCRYPT: 'true'
+      SESSION_SECURE_COOKIE: '${SESSION_SECURE_COOKIE:-true}'
+      QUEUE_CONNECTION: redis
+      CACHE_STORE: redis
+      FILESYSTEM_DISK: local
+      LOG_LEVEL: '${LOG_LEVEL:-info}'
+      SANCTUM_STATEFUL_DOMAINS: '${SANCTUM_STATEFUL_DOMAINS:-localhost,localhost:8080}'
+      SESSION_LIFETIME: '120'
+      FRONTEND_URL: '${FRONTEND_URL}'
+    command: ['php', 'artisan', 'schedule:work', '--verbose', '--no-interaction']
+    depends_on:
+      pgsql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       - appnet
     restart: unless-stopped
