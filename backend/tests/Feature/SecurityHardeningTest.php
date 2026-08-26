@@ -132,6 +132,11 @@ test('nginx locations that define add_header repeat core security headers', func
 
     $conf = file_get_contents($confPath);
 
+    // Directive parsing must ignore comments: prose legitimately uses words
+    // like "location"/"add_header", which would otherwise be misparsed as
+    // configuration blocks by the naive split below.
+    $conf = preg_replace('/^\s*#.*$/m', '', $conf) ?? $conf;
+
     $blocks = preg_split('/(?=location\s)/', $conf) ?: [];
     $violations = [];
 
