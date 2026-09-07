@@ -1,5 +1,11 @@
-import axiosClient from './axiosClient';
+import axios from 'axios';
 
 export async function fetchCsrfCookie(): Promise<void> {
-  await axiosClient.get('/sanctum/csrf-cookie');
+  await axios.get('/sanctum/csrf-cookie', {
+    withCredentials: true,
+    headers: {
+      Accept: 'application/json',
+    },
+  });
 }
+

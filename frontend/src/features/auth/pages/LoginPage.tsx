@@ -1,11 +1,11 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2, AlertCircle, Eye, EyeOff, Truck } from 'lucide-react';
-import { loginSchema, type LoginFormData } from '../schemas/authSchema';
-import { useAuthContext } from '../context/AuthContext';
 import { useAuthStore } from '@/shared/stores/authStore';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { AlertCircle, Eye, EyeOff, Loader2, Truck } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuthContext } from '../context/AuthContext';
+import { loginSchema, type LoginFormData } from '../schemas/authSchema';
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -22,10 +22,11 @@ export function LoginPage() {
     resolver: zodResolver(loginSchema),
   });
 
+  useEffect(() => {
   if (isAuthenticated) {
     navigate('/app/dashboard', { replace: true });
-    return null;
   }
+}, [isAuthenticated, navigate]);
 
   async function onSubmit(data: LoginFormData) {
     setServerFieldErrors(null);
